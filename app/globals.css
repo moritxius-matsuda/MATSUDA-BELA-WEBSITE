@@ -22,7 +22,7 @@
   }
 }
 
-.dark body {
+.dark-mode {
   color: rgb(var(--foreground-rgb));
   background: black;
   min-height: 100vh;

@@ -12,8 +12,11 @@ export default function Navbar() {
 
   // Toggle dark mode
   const toggleTheme = () => {
-    const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
-    document.documentElement.setAttribute('data-theme', newTheme)
+    const html = document.documentElement
+    const body = document.body
+    const isDark = html.getAttribute('data-theme') === 'dark'
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark')
+    body.classList.toggle('dark-mode')
   }
 
   // Prüfe ob User Zugriff auf Relais hat
