@@ -23,23 +23,7 @@ export interface Guide {
 }
 
 export const guides: Guide[] = [
-  {
-    id: '1',
-    title: 'Installation von Proxmox VE auf einem Hetzner VPS Server mit LAN-Netzwerk',
-    description: 'Lerne, wie du Proxmox Virtual Environment auf einem Hetzner VPS Server installierst und ein internes LAN-Netzwerk für deine virtuellen Maschinen einrichtest. Dieser umfassende Guide führt dich durch alle notwendigen Schritte.',
-    category: 'Virtualisierung',
-    operatingSystem: ['Debian', 'Proxmox VE'],
-    difficulty: 'Fortgeschritten',
-    readTime: '15 Min.',
-    slug: 'proxmox-guide',
-    tags: ['proxmox', 'virtualisierung', 'hetzner', 'vps', 'lan', 'netzwerk', 'dhcp', 'iptables'],
-    publishedAt: '2024-01-15',
-    updatedAt: '2024-01-15',
-    author: 'Matsuda Béla',
-    authorRole: 'System Administrator',
-    authorImage: '/matsuda-béla-weiß.png'
-  }
-  // Hier können weitere Guides hinzugefügt werden
+  // Alle Guides werden jetzt dynamisch aus Vercel Blob geladen
 ]
 
 export const categories = [

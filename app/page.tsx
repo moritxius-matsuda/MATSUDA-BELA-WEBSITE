@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import GuideCard from '@/components/GuideCard'
-import { guides as staticGuides, categories, operatingSystems, difficulties } from '@/data/guides'
+import { categories, operatingSystems, difficulties } from '@/data/guides'
 import type { Guide } from '@/data/guides'
 
 export default function Home() {
@@ -10,10 +10,10 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('Alle')
   const [selectedOS, setSelectedOS] = useState('Alle')
   const [selectedDifficulty, setSelectedDifficulty] = useState('Alle')
-  const [allGuides, setAllGuides] = useState<Guide[]>(staticGuides)
+  const [allGuides, setAllGuides] = useState<Guide[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Lade alle Guides (statische + gespeicherte)
+  // Lade alle Guides aus Vercel Blob
   useEffect(() => {
     const loadAllGuides = async () => {
       try {
@@ -21,18 +21,13 @@ export default function Home() {
         if (response.ok) {
           const result = await response.json()
           const savedGuides = result.guides || []
-          
-          // Kombiniere statische und gespeicherte Guides
-          const combined = [...staticGuides, ...savedGuides]
-          setAllGuides(combined)
+          setAllGuides(savedGuides)
         } else {
-          // Fallback zu statischen Guides
-          setAllGuides(staticGuides)
+          setAllGuides([])
         }
       } catch (error) {
         console.error('Error loading guides:', error)
-        // Fallback zu statischen Guides
-        setAllGuides(staticGuides)
+        setAllGuides([])
       } finally {
         setLoading(false)
       }
