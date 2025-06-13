@@ -54,13 +54,25 @@ body {
   transition: all 0.3s ease;
 }
 
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+/* Reduzierte Hover-Effekte für mobile Geräte */
+@media (hover: hover) and (pointer: fine) {
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+}
+
+/* Vereinfachte Glaseffekte für mobile Geräte */
+@media (max-width: 768px) {
+  .glass-card {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .relais-card-open {
@@ -83,6 +95,16 @@ body {
     inset 0 1px 0 rgba(239, 68, 68, 0.2);
 }
 
+/* Mobile Optimierungen für Relais Cards */
+@media (max-width: 768px) {
+  .relais-card-open,
+  .relais-card-closed {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+}
+
 .glass-navbar {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(24px);
@@ -99,10 +121,27 @@ body {
   transition: all 0.3s ease;
 }
 
-.glass-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+/* Hover-Effekte nur für Desktop */
+@media (hover: hover) and (pointer: fine) {
+  .glass-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Mobile Optimierungen */
+@media (max-width: 768px) {
+  .glass-navbar {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .glass-button {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
 }
 
 .glass-input {
@@ -172,4 +211,43 @@ body {
   bottom: -125px;
   left: 30%;
   animation-delay: -4s;
+}
+
+/* Mobile Performance Optimierungen */
+@media (max-width: 768px) {
+  /* Reduzierte Animation für mobile Geräte */
+  .liquid-shape {
+    animation: none;
+    filter: blur(20px);
+    opacity: 0.5;
+  }
+  
+  /* Kleinere Shapes für mobile */
+  .liquid-shape:nth-child(1) {
+    width: 200px;
+    height: 200px;
+    top: -100px;
+    left: -100px;
+  }
+
+  .liquid-shape:nth-child(2) {
+    width: 250px;
+    height: 250px;
+    top: 50%;
+    right: -125px;
+  }
+
+  .liquid-shape:nth-child(3) {
+    width: 150px;
+    height: 150px;
+    bottom: -75px;
+    left: 30%;
+  }
+}
+
+/* Reduzierte Bewegung für Nutzer mit motion-reduce Präferenz */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-shape {
+    animation: none;
+  }
 }

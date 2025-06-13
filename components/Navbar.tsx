@@ -22,7 +22,7 @@ export default function Navbar() {
               <img 
                 src="/rechteck-weiß.png" 
                 alt="Matsuda Béla" 
-                className="h-8 w-auto opacity-90 hover:opacity-100 transition-opacity duration-300"
+                className="h-8 w-auto opacity-90 md:hover:opacity-100 transition-opacity duration-300"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
@@ -47,7 +47,7 @@ export default function Navbar() {
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                 pathname === '/' 
                   ? 'glass-button text-white shadow-lg' 
-                  : 'text-white/80 hover:text-white hover:glass-button'
+                  : 'text-white/80 md:hover:text-white md:hover:glass-button'
               }`}
             >
               Home
@@ -59,7 +59,7 @@ export default function Navbar() {
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                   pathname === '/relais' 
                     ? 'glass-button text-white shadow-lg' 
-                    : 'text-white/80 hover:text-white hover:glass-button'
+                    : 'text-white/80 md:hover:text-white md:hover:glass-button'
                 }`}
               >
                 Relais Steuerung
@@ -71,7 +71,7 @@ export default function Navbar() {
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                 pathname === '/impressum' 
                   ? 'glass-button text-white shadow-lg' 
-                  : 'text-white/80 hover:text-white hover:glass-button'
+                  : 'text-white/80 md:hover:text-white md:hover:glass-button'
               }`}
             >
               Impressum
@@ -90,13 +90,13 @@ export default function Navbar() {
               <div className="flex items-center space-x-3">
                 <Link 
                   href="/sign-in" 
-                  className="text-white/80 hover:text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:glass-button"
+                  className="text-white/80 md:hover:text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 md:hover:glass-button"
                 >
                   Anmelden
                 </Link>
                 <Link 
                   href="/sign-up" 
-                  className="glass-button text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:shadow-lg"
+                  className="glass-button text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 md:hover:shadow-lg"
                 >
                   Registrieren
                 </Link>
@@ -108,7 +108,7 @@ export default function Navbar() {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-white/80 hover:text-white p-2 rounded-lg hover:glass-button transition-all duration-300"
+              className="text-white/80 md:hover:text-white p-2 rounded-lg md:hover:glass-button transition-all duration-300"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isMenuOpen ? (
@@ -130,7 +130,7 @@ export default function Navbar() {
                 className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ${
                   pathname === '/' 
                     ? 'glass-button text-white' 
-                    : 'text-white/80 hover:text-white hover:glass-button'
+                    : 'text-white/80'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -143,7 +143,7 @@ export default function Navbar() {
                   className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ${
                     pathname === '/relais' 
                       ? 'glass-button text-white' 
-                      : 'text-white/80 hover:text-white hover:glass-button'
+                      : 'text-white/80'
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -156,7 +156,7 @@ export default function Navbar() {
                 className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ${
                   pathname === '/impressum' 
                     ? 'glass-button text-white' 
-                    : 'text-white/80 hover:text-white hover:glass-button'
+                    : 'text-white/80'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -176,7 +176,7 @@ export default function Navbar() {
                 <div className="space-y-1">
                   <Link 
                     href="/sign-in" 
-                    className="block px-3 py-2 rounded-md text-base font-medium text-white/80 hover:text-white hover:glass-button transition-all duration-300"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-white/80 transition-all duration-300"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Anmelden

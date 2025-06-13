@@ -13,7 +13,7 @@ export default function RelaisCard({ relaisNumber, isOpen, onToggle }: RelaisCar
   }
 
   return (
-    <div className={`p-4 hover:scale-105 transition-all duration-300 backdrop-filter backdrop-blur-20 border border-white/20 rounded-2xl ${
+    <div className={`p-4 md:hover:scale-105 transition-all duration-300 backdrop-filter backdrop-blur-20 border border-white/20 rounded-2xl ${
       isOpen 
         ? 'bg-green-500/20 shadow-green-400/20 border-green-400/30' 
         : 'bg-red-500/20 shadow-red-400/20 border-red-400/30'
@@ -22,7 +22,7 @@ export default function RelaisCard({ relaisNumber, isOpen, onToggle }: RelaisCar
         <h3 className="text-lg font-bold text-white">
           R{relaisNumber}
         </h3>
-        <div className={`w-4 h-4 rounded-full shadow-lg animate-pulse ${
+        <div className={`w-4 h-4 rounded-full shadow-lg md:animate-pulse ${
           isOpen 
             ? 'bg-green-400 shadow-green-400/50' 
             : 'bg-red-400 shadow-red-400/50'
@@ -45,8 +45,8 @@ export default function RelaisCard({ relaisNumber, isOpen, onToggle }: RelaisCar
         onClick={handleToggle}
         className={`w-full py-3 px-4 rounded-full text-sm font-medium transition-all duration-300 glass-button ${
           isOpen
-            ? 'text-red-200 hover:text-red-100 hover:shadow-red-400/30'
-            : 'text-green-200 hover:text-green-100 hover:shadow-green-400/30'
+            ? 'text-red-200 md:hover:text-red-100 md:hover:shadow-red-400/30'
+            : 'text-green-200 md:hover:text-green-100 md:hover:shadow-green-400/30'
         }`}
       >
         {isOpen ? 'SCHLIESSEN' : 'ÖFFNEN'}

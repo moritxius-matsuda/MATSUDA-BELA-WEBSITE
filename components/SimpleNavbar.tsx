@@ -17,7 +17,7 @@ export default function SimpleNavbar() {
               <img 
                 src="/rechteck-weiß.png" 
                 alt="Matsuda Béla" 
-                className="h-8 w-auto opacity-90 hover:opacity-100 transition-opacity duration-300"
+                className="h-8 w-auto opacity-90 md:hover:opacity-100 transition-opacity duration-300"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
@@ -42,7 +42,7 @@ export default function SimpleNavbar() {
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                 pathname === '/' 
                   ? 'glass-button text-white shadow-lg' 
-                  : 'text-white/80 hover:text-white hover:glass-button'
+                  : 'text-white/80 md:hover:text-white md:hover:glass-button'
               }`}
             >
               Home
@@ -53,7 +53,7 @@ export default function SimpleNavbar() {
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                 pathname === '/impressum' 
                   ? 'glass-button text-white shadow-lg' 
-                  : 'text-white/80 hover:text-white hover:glass-button'
+                  : 'text-white/80 md:hover:text-white md:hover:glass-button'
               }`}
             >
               Impressum
@@ -62,13 +62,13 @@ export default function SimpleNavbar() {
             <div className="flex items-center space-x-3">
               <Link 
                 href="/sign-in" 
-                className="text-white/80 hover:text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:glass-button"
+                className="text-white/80 md:hover:text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 md:hover:glass-button"
               >
                 Anmelden
               </Link>
               <Link 
                 href="/sign-up" 
-                className="glass-button text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:shadow-lg"
+                className="glass-button text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 md:hover:shadow-lg"
               >
                 Registrieren
               </Link>
