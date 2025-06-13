@@ -20,8 +20,13 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="de">
         <body className={inter.className}>
+          <div className="liquid-bg">
+            <div className="liquid-shape"></div>
+            <div className="liquid-shape"></div>
+            <div className="liquid-shape"></div>
+          </div>
           <Navbar />
-          <main className="min-h-screen">
+          <main className="min-h-screen pt-16">
             {children}
           </main>
         </body>

@@ -78,49 +78,53 @@ export default function SimpleAuth({ children, requireAuth = false, requireRelai
   if (requireAuth && !user) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-4">Anmeldung erforderlich</h2>
+        <div className="max-w-md mx-auto glass-card p-8">
+          <h2 className="text-2xl font-bold mb-6 text-white text-center">Anmeldung erforderlich</h2>
           <form onSubmit={handleLogin}>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
+            <div className="mb-6">
+              <label className="block text-white/90 text-sm font-bold mb-2">
                 E-Mail
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="glass-input w-full px-4 py-3 rounded-full focus:outline-none"
+                placeholder="Ihre E-Mail-Adresse"
                 required
               />
             </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
+            <div className="mb-6">
+              <label className="block text-white/90 text-sm font-bold mb-2">
                 Passwort
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="glass-input w-full px-4 py-3 rounded-full focus:outline-none"
+                placeholder="Ihr Passwort"
                 required
               />
             </div>
             {error && (
-              <div className="mb-4 text-red-600 text-sm">{error}</div>
+              <div className="mb-4 text-red-400 text-sm text-center font-medium">{error}</div>
             )}
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              className="glass-button w-full text-white font-bold py-3 px-4 rounded-full transition-all duration-300 hover:shadow-lg"
             >
               Anmelden
             </button>
           </form>
           
-          <div className="mt-6 text-sm text-gray-600">
-            <p className="font-semibold">Test-Accounts:</p>
-            <p>Admin: admin@moritxius.de / admin123</p>
-            <p>Relais: relais@moritxius.de / relais123</p>
-            <p>User: user@moritxius.de / user123</p>
+          <div className="mt-8 text-sm text-white/70">
+            <p className="font-semibold text-white/90 mb-2">Test-Accounts:</p>
+            <div className="space-y-1">
+              <p>Admin: admin@moritxius.de / admin123</p>
+              <p>Relais: relais@moritxius.de / relais123</p>
+              <p>User: user@moritxius.de / user123</p>
+            </div>
           </div>
         </div>
       </div>
@@ -131,17 +135,17 @@ export default function SimpleAuth({ children, requireAuth = false, requireRelai
   if (requireRelais && user && !user.relais && !user.admin) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Zugriff verweigert</h2>
-          <p className="text-gray-600 mb-4">
+        <div className="max-w-md mx-auto glass-card p-8 text-center">
+          <h2 className="text-2xl font-bold text-red-400 mb-6">Zugriff verweigert</h2>
+          <p className="text-white/80 mb-4">
             Sie haben keine Berechtigung für die Relais-Steuerung.
           </p>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-white/60 mb-6">
             Angemeldet als: {user.email}
           </p>
           <button
             onClick={handleLogout}
-            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            className="glass-button text-red-300 hover:text-red-200 font-bold py-3 px-6 rounded-full transition-all duration-300"
           >
             Abmelden
           </button>

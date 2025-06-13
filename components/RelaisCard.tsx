@@ -14,18 +14,26 @@ export default function RelaisCard({ relaisNumber, isOpen, onToggle, loading }: 
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-3 border border-gray-200 hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-gray-800">
+    <div className="glass-card p-4 hover:scale-105 transition-all duration-300">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-lg font-bold text-white">
           R{relaisNumber}
         </h3>
-        <div className={`w-2 h-2 rounded-full ${isOpen ? 'bg-green-500' : 'bg-red-500'}`}></div>
+        <div className={`w-3 h-3 rounded-full shadow-lg ${
+          isOpen 
+            ? 'bg-green-400 shadow-green-400/50' 
+            : 'bg-red-400 shadow-red-400/50'
+        }`}></div>
       </div>
       
-      <div className="mb-2">
+      <div className="mb-4">
         <div className="text-center">
-          <span className={`text-xs font-medium ${isOpen ? 'text-green-600' : 'text-red-600'}`}>
-            {isOpen ? 'ON' : 'OFF'}
+          <span className={`text-sm font-bold ${
+            isOpen 
+              ? 'text-green-300' 
+              : 'text-red-300'
+          }`}>
+            {isOpen ? 'AKTIV' : 'INAKTIV'}
           </span>
         </div>
       </div>
@@ -33,20 +41,20 @@ export default function RelaisCard({ relaisNumber, isOpen, onToggle, loading }: 
       <button
         onClick={handleToggle}
         disabled={loading}
-        className={`w-full py-1.5 px-2 rounded text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`w-full py-3 px-4 rounded-full text-sm font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
           isOpen
-            ? 'bg-red-600 hover:bg-red-700 text-white'
-            : 'bg-green-600 hover:bg-green-700 text-white'
+            ? 'glass-button text-red-300 hover:text-red-200 hover:shadow-red-400/20'
+            : 'glass-button text-green-300 hover:text-green-200 hover:shadow-green-400/20'
         }`}
       >
         {loading ? (
           <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-            ...
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            Wird verarbeitet...
           </div>
         ) : (
           <>
-            {isOpen ? 'AUS' : 'EIN'}
+            {isOpen ? 'AUSSCHALTEN' : 'EINSCHALTEN'}
           </>
         )}
       </button>

@@ -100,9 +100,9 @@ export default function RelaisPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Lade Benutzerdaten...</p>
+          <div className="glass-card p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-white/80">Lade Benutzerdaten...</p>
           </div>
         </div>
       </div>
@@ -114,14 +114,14 @@ export default function RelaisPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">
+          <div className="glass-card p-8 text-center">
+            <h1 className="text-2xl font-bold text-red-400 mb-4">
               Zugriff verweigert
             </h1>
-            <p className="text-gray-600 mb-4">
+            <p className="text-white/80 mb-4">
               Sie haben keine Berechtigung für die Relais-Steuerung.
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-white/60">
               Kontaktieren Sie den Administrator, um Zugriff zu erhalten.
               <br />
               (Benötigt: relais=1 oder admin=1 in Public Metadata)
@@ -136,9 +136,9 @@ export default function RelaisPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Lade Relais Status...</p>
+          <div className="glass-card p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-white/80">Lade Relais Status...</p>
           </div>
         </div>
       </div>
@@ -148,37 +148,39 @@ export default function RelaisPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Relais Steuerung
-        </h1>
-        <div className="flex items-center justify-between">
-          <p className="text-gray-600">
-            Steuerung von 16 Relais über door.moritxius.de
-          </p>
-          <button
-            onClick={fetchStatus}
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
-          >
-            {loading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            )}
-            Aktualisieren
-          </button>
-        </div>
-        
-        {error && (
-          <div className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            <strong>Fehler:</strong> {error}
+        <div className="glass-card p-6 mb-6">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
+            Relais Steuerung
+          </h1>
+          <div className="flex items-center justify-between">
+            <p className="text-white/80">
+              Steuerung von 16 Relais über door.moritxius.de
+            </p>
+            <button
+              onClick={fetchStatus}
+              disabled={loading}
+              className="glass-button text-white px-6 py-3 rounded-full transition-all duration-300 flex items-center gap-2 hover:shadow-lg disabled:opacity-50"
+            >
+              {loading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              )}
+              Aktualisieren
+            </button>
           </div>
-        )}
+          
+          {error && (
+            <div className="mt-4 glass-card p-4 border border-red-400/30">
+              <strong className="text-red-400">Fehler:</strong> <span className="text-white/80">{error}</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
         {relaisNumbers.map((number) => (
           <RelaisCard
             key={number}
@@ -190,13 +192,13 @@ export default function RelaisPage() {
         ))}
       </div>
 
-      <div className="mt-8 bg-gray-100 p-4 rounded-lg">
-        <h3 className="text-lg font-semibold mb-2">API Information</h3>
-        <div className="text-sm text-gray-600 space-y-1">
-          <p><strong>Server:</strong> door.moritxius.de</p>
-          <p><strong>Status Endpoint:</strong> GET /api/status</p>
-          <p><strong>Steuerung:</strong> POST /api/[relaisnummer]/[open/close]</p>
-          <p><strong>Authentifizierung:</strong> Header x-api-password erforderlich</p>
+      <div className="mt-8 glass-card p-6">
+        <h3 className="text-lg font-semibold mb-4 text-white">API Information</h3>
+        <div className="text-sm text-white/70 space-y-2">
+          <p><strong className="text-white/90">Server:</strong> door.moritxius.de</p>
+          <p><strong className="text-white/90">Status Endpoint:</strong> GET /api/status</p>
+          <p><strong className="text-white/90">Steuerung:</strong> POST /api/[relaisnummer]/[open/close]</p>
+          <p><strong className="text-white/90">Authentifizierung:</strong> Header x-api-password erforderlich</p>
         </div>
       </div>
     </div>
