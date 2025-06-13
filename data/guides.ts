@@ -1,3 +1,9 @@
+export interface GuideSection {
+  id: string
+  type: 'text' | 'code' | 'path'
+  content: string
+}
+
 export interface Guide {
   id: string
   title: string
@@ -12,6 +18,8 @@ export interface Guide {
   updatedAt: string
   author: string
   authorRole?: string
+  authorImage?: string
+  sections?: GuideSection[]
 }
 
 export const guides: Guide[] = [
@@ -28,7 +36,8 @@ export const guides: Guide[] = [
     publishedAt: '2024-01-15',
     updatedAt: '2024-01-15',
     author: 'Matsuda Béla',
-    authorRole: 'System Administrator'
+    authorRole: 'System Administrator',
+    authorImage: '/matsuda-béla-weiß.png'
   }
   // Hier können weitere Guides hinzugefügt werden
 ]

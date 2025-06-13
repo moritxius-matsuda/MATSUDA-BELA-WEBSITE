@@ -77,11 +77,19 @@ export default function ProxmoxGuidePage() {
             <div>
               <h3 className="text-white/60 text-sm font-medium mb-2">Autor</h3>
               <div className="flex items-center">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-white text-sm font-bold">
-                    {guide.author.split(' ').map(n => n[0]).join('')}
-                  </span>
-                </div>
+                {guide.authorImage ? (
+                  <img 
+                    src={guide.authorImage} 
+                    alt={guide.author}
+                    className="w-8 h-8 rounded-full mr-3 border border-white/20"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-sm font-bold">
+                      {guide.author.split(' ').map(n => n[0]).join('')}
+                    </span>
+                  </div>
+                )}
                 <div>
                   <p className="text-white font-medium">{guide.author}</p>
                   {guide.authorRole && (

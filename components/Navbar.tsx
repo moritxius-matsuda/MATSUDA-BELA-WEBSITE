@@ -12,6 +12,9 @@ export default function Navbar() {
 
   // Prüfe ob User Zugriff auf Relais hat
   const hasRelaisAccess = user?.publicMetadata?.relais === 1 || user?.publicMetadata?.admin === 1
+  
+  // Prüfe ob User Zugriff auf Guide-Editor hat
+  const hasEditorAccess = user?.publicMetadata?.author === 1 || user?.publicMetadata?.admin === 1
 
   return (
     <nav className="glass-navbar fixed top-0 left-0 right-0 z-50">
@@ -63,6 +66,19 @@ export default function Navbar() {
                 }`}
               >
                 Relais Steuerung
+              </Link>
+            )}
+
+            {user && hasEditorAccess && (
+              <Link 
+                href="/guide-editor" 
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  pathname === '/guide-editor' 
+                    ? 'glass-button text-white shadow-lg' 
+                    : 'text-white/80 md:hover:text-white md:hover:glass-button'
+                }`}
+              >
+                Guide Editor
               </Link>
             )}
 
@@ -148,6 +164,20 @@ export default function Navbar() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Relais Steuerung
+                </Link>
+              )}
+
+              {user && hasEditorAccess && (
+                <Link 
+                  href="/guide-editor" 
+                  className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ${
+                    pathname === '/guide-editor' 
+                      ? 'glass-button text-white' 
+                      : 'text-white/80'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Guide Editor
                 </Link>
               )}
 
