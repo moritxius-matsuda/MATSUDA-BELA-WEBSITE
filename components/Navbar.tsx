@@ -16,8 +16,22 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link href="/" className="text-white text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              Matsuda Béla
+            <Link href="/" className="flex items-center">
+              <img 
+                src="/rechteck-weiß.png" 
+                alt="Matsuda Béla" 
+                className="h-8 w-auto opacity-90 hover:opacity-100 transition-opacity duration-300"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling.style.display = 'block';
+                }}
+              />
+              <span 
+                className="text-white text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent hidden"
+                style={{ display: 'none' }}
+              >
+                Matsuda Béla
+              </span>
             </Link>
           </div>
           
@@ -82,12 +96,6 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
-            
-            <img 
-              src="/rechteck-weiß.png" 
-              alt="Matsuda Béla Logo" 
-              className="h-10 w-auto opacity-80 hover:opacity-100 transition-opacity duration-300 ml-4"
-            />
           </div>
         </div>
       </div>
