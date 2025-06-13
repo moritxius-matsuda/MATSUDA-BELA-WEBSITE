@@ -6,38 +6,7 @@ import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
 import TextStyle from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
-import { Node, mergeAttributes } from '@tiptap/core'
 import { useCallback } from 'react'
-
-// Custom Path Extension
-const PathNode = Node.create({
-  name: 'pathNode',
-  group: 'block',
-  content: 'text*',
-  
-  parseHTML() {
-    return [
-      {
-        tag: 'div[data-type="path"]',
-      },
-    ]
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 
-      'data-type': 'path',
-      class: 'path-node bg-blue-500/10 border-2 border-blue-400/50 rounded-lg p-3 font-mono text-blue-300 my-2'
-    }), 0]
-  },
-
-  addCommands() {
-    return {
-      setPath: (attributes) => ({ commands }) => {
-        return commands.setNode(this.name, attributes)
-      },
-    }
-  },
-})
 
 interface SimpleTiptapEditorProps {
   content: string
@@ -62,7 +31,6 @@ export default function SimpleTiptapEditor({ content, onChange, placeholder = 'S
       }),
       TextStyle,
       Color,
-      PathNode,
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -106,7 +74,9 @@ export default function SimpleTiptapEditor({ content, onChange, placeholder = 'S
     const path = window.prompt('Pfad eingeben (z.B. /etc/network/interfaces)')
 
     if (path) {
-      editor?.chain().focus().setPath().insertContent(path).run()
+      // Füge einen speziellen Code-Block mit Pfad-Styling hinzu
+      const pathHtml = `<div style="background-color: rgba(59, 130, 246, 0.1); border: 2px solid rgba(59, 130, 246, 0.5); border-radius: 0.5rem; padding: 0.75rem; font-family: monospace; color: #93c5fd; margin: 0.5rem 0;" data-type="path">${path}</div>`
+      editor?.chain().focus().insertContent(pathHtml).run()
     }
   }, [editor])
 
@@ -238,9 +208,7 @@ export default function SimpleTiptapEditor({ content, onChange, placeholder = 'S
             </button>
             <button
               onClick={addPath}
-              className={`p-2 rounded text-sm font-mono ${
-                editor.isActive('pathNode') ? 'bg-blue-500 text-white' : 'text-white/70 hover:bg-white/10'
-              }`}
+              className="p-2 rounded text-sm font-mono text-white/70 hover:bg-white/10"
               title="Pfad"
             >
               📁
