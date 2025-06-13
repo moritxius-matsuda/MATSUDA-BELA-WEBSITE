@@ -4,49 +4,20 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
-import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
-import Table from '@tiptap/extension-table'
-import TableRow from '@tiptap/extension-table-row'
-import TableHeader from '@tiptap/extension-table-header'
-import TableCell from '@tiptap/extension-table-cell'
 import TextStyle from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
-import { createLowlight } from 'lowlight'
 import { useCallback } from 'react'
 
-// Sprachen für Code-Highlighting
-import javascript from 'highlight.js/lib/languages/javascript'
-import typescript from 'highlight.js/lib/languages/typescript'
-import python from 'highlight.js/lib/languages/python'
-import bash from 'highlight.js/lib/languages/bash'
-import json from 'highlight.js/lib/languages/json'
-import css from 'highlight.js/lib/languages/css'
-import html from 'highlight.js/lib/languages/xml'
-
-// Erstelle lowlight Instanz
-const lowlight = createLowlight()
-
-// Registriere Sprachen
-lowlight.register('javascript', javascript)
-lowlight.register('typescript', typescript)
-lowlight.register('python', python)
-lowlight.register('bash', bash)
-lowlight.register('json', json)
-lowlight.register('css', css)
-lowlight.register('html', html)
-
-interface TiptapEditorProps {
+interface SimpleTiptapEditorProps {
   content: string
   onChange: (content: string) => void
   placeholder?: string
 }
 
-export default function TiptapEditor({ content, onChange, placeholder = 'Schreiben Sie hier...' }: TiptapEditorProps) {
+export default function SimpleTiptapEditor({ content, onChange, placeholder = 'Schreiben Sie hier...' }: SimpleTiptapEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        codeBlock: false, // Wir verwenden CodeBlockLowlight stattdessen
-      }),
+      StarterKit,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
@@ -56,33 +27,6 @@ export default function TiptapEditor({ content, onChange, placeholder = 'Schreib
       Image.configure({
         HTMLAttributes: {
           class: 'max-w-full h-auto rounded-lg',
-        },
-      }),
-      CodeBlockLowlight.configure({
-        lowlight,
-        HTMLAttributes: {
-          class: 'bg-gray-900 text-green-300 p-4 rounded-lg font-mono text-sm overflow-x-auto',
-        },
-      }),
-      Table.configure({
-        resizable: true,
-        HTMLAttributes: {
-          class: 'border-collapse border border-white/20 w-full',
-        },
-      }),
-      TableRow.configure({
-        HTMLAttributes: {
-          class: 'border border-white/20',
-        },
-      }),
-      TableHeader.configure({
-        HTMLAttributes: {
-          class: 'border border-white/20 bg-white/10 p-2 font-semibold',
-        },
-      }),
-      TableCell.configure({
-        HTMLAttributes: {
-          class: 'border border-white/20 p-2',
         },
       }),
       TextStyle,
@@ -124,10 +68,6 @@ export default function TiptapEditor({ content, onChange, placeholder = 'Schreib
     if (url) {
       editor?.chain().focus().setImage({ src: url }).run()
     }
-  }, [editor])
-
-  const insertTable = useCallback(() => {
-    editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
   }, [editor])
 
   if (!editor) {
@@ -272,42 +212,6 @@ export default function TiptapEditor({ content, onChange, placeholder = 'Schreib
             >
               🖼️
             </button>
-          </div>
-
-          {/* Table */}
-          <div className="flex gap-1 border-r border-white/20 pr-2">
-            <button
-              onClick={insertTable}
-              className="p-2 rounded text-sm text-white/70 hover:bg-white/10"
-              title="Tabelle einfügen"
-            >
-              📊
-            </button>
-            {editor.isActive('table') && (
-              <>
-                <button
-                  onClick={() => editor.chain().focus().addColumnBefore().run()}
-                  className="p-2 rounded text-sm text-white/70 hover:bg-white/10"
-                  title="Spalte links hinzufügen"
-                >
-                  ⬅️+
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().addColumnAfter().run()}
-                  className="p-2 rounded text-sm text-white/70 hover:bg-white/10"
-                  title="Spalte rechts hinzufügen"
-                >
-                  ➡️+
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().deleteColumn().run()}
-                  className="p-2 rounded text-sm text-white/70 hover:bg-white/10"
-                  title="Spalte löschen"
-                >
-                  ❌
-                </button>
-              </>
-            )}
           </div>
 
           {/* Undo/Redo */}

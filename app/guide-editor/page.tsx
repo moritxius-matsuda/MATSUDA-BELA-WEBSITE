@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { categories, operatingSystems, difficulties } from '@/data/guides'
-import TiptapEditor from '@/components/TiptapEditor'
+import SimpleTiptapEditor from '@/components/SimpleTiptapEditor'
 
 interface GuideSection {
   id: string
@@ -587,7 +587,7 @@ export default function GuideEditorPage() {
                 {/* Content Input */}
                 {section.type === 'text' ? (
                   <div>
-                    <TiptapEditor
+                    <SimpleTiptapEditor
                       content={section.content}
                       onChange={(content) => updateSection(section.id, content)}
                       placeholder="Schreibe hier deinen Text..."
