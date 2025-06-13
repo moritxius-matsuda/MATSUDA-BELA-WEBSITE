@@ -2,30 +2,41 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
 import { put, list } from '@vercel/blob'
 
-// Lade alle individuellen Guide-Dateien
+const GUIDES_FILENAME = 'guides.json'
+
+// Lade alle Guides aus der zentralen guides.json
 async function loadAllGuides() {
   try {
-    const { blobs } = await list({ prefix: 'guide-' })
-    const guides = []
+    const { blobs } = await list()
+    const guidesBlob = blobs.find(blob => blob.pathname === GUIDES_FILENAME)
     
-    for (const blob of blobs) {
-      if (blob.pathname.endsWith('.json')) {
-        try {
-          const response = await fetch(blob.url)
-          if (response.ok) {
-            const guide = await response.json()
-            guides.push(guide)
-          }
-        } catch (error) {
-          console.error(`Error loading guide ${blob.pathname}:`, error)
-        }
+    if (guidesBlob) {
+      const response = await fetch(guidesBlob.url)
+      if (response.ok) {
+        const data = await response.json()
+        return data.guides || []
       }
     }
     
-    return guides
+    return []
   } catch (error) {
     console.error('Error loading guides:', error)
     return []
+  }
+}
+
+// Speichere alle Guides in der zentralen guides.json
+async function saveAllGuides(guides: any[]) {
+  try {
+    const blob = await put(GUIDES_FILENAME, JSON.stringify({ guides }, null, 2), {
+      access: 'public',
+      contentType: 'application/json'
+    })
+    
+    return blob
+  } catch (error) {
+    console.error('Error saving guides:', error)
+    return null
   }
 }
 
@@ -50,7 +61,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Lade bestehende Guides um Slug-Duplikate zu prüfen
+    // Lade bestehende Guides
     const existingGuides = await loadAllGuides()
     
     // Erstelle neuen Guide
@@ -82,11 +93,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Erstelle nur die individuelle Guide-Datei
-    const guideBlob = await put(`guide-${newGuide.slug}.json`, JSON.stringify(newGuide, null, 2), {
-      access: 'public',
-      contentType: 'application/json'
-    })
+    // Füge neuen Guide zur Liste hinzu
+    existingGuides.push(newGuide)
+    
+    // Speichere alle Guides in guides.json
+    const saved = await saveAllGuides(existingGuides)
+    
+    if (!saved) {
+      return NextResponse.json(
+        { error: 'Fehler beim Speichern des Guides' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,

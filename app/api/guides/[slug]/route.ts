@@ -1,20 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
-import { put, list, del } from '@vercel/blob'
+import { put, list } from '@vercel/blob'
+
+const GUIDES_FILENAME = 'guides.json'
+
+// Lade alle Guides aus der zentralen guides.json
+async function loadAllGuides() {
+  try {
+    const { blobs } = await list()
+    const guidesBlob = blobs.find(blob => blob.pathname === GUIDES_FILENAME)
+    
+    if (guidesBlob) {
+      const response = await fetch(guidesBlob.url)
+      if (response.ok) {
+        const data = await response.json()
+        return data.guides || []
+      }
+    }
+    
+    return []
+  } catch (error) {
+    console.error('Error loading guides:', error)
+    return []
+  }
+}
+
+// Speichere alle Guides in der zentralen guides.json
+async function saveAllGuides(guides: any[]) {
+  try {
+    const blob = await put(GUIDES_FILENAME, JSON.stringify({ guides }, null, 2), {
+      access: 'public',
+      contentType: 'application/json'
+    })
+    
+    return blob
+  } catch (error) {
+    console.error('Error saving guides:', error)
+    return null
+  }
+}
 
 // Lade einen spezifischen Guide
 async function loadGuide(slug: string) {
   try {
-    const { blobs } = await list({ prefix: `guide-${slug}.json` })
-    
-    if (blobs.length > 0) {
-      const response = await fetch(blobs[0].url)
-      if (response.ok) {
-        return await response.json()
-      }
-    }
-    
-    return null
+    const guides = await loadAllGuides()
+    return guides.find((guide: any) => guide.slug === slug) || null
   } catch (error) {
     console.error('Error loading guide:', error)
     return null
@@ -133,29 +163,43 @@ export async function PUT(
       updatedAt: new Date().toISOString()
     }
 
+    // Lade alle Guides
+    const allGuides = await loadAllGuides()
+    const guideIndex = allGuides.findIndex((g: any) => g.slug === existingGuide.slug)
+    
+    if (guideIndex === -1) {
+      return NextResponse.json(
+        { error: 'Guide nicht in der Liste gefunden' },
+        { status: 404 }
+      )
+    }
+
     // Prüfe ob neuer Slug bereits existiert (falls geändert)
     if (body.slug && body.slug !== existingGuide.slug) {
-      const { blobs } = await list({ prefix: `guide-${body.slug}.json` })
-      if (blobs.length > 0) {
+      const slugExists = allGuides.some((guide: any, index: number) => 
+        guide.slug === body.slug && index !== guideIndex
+      )
+      if (slugExists) {
         return NextResponse.json(
           { error: 'Ein Guide mit diesem Slug existiert bereits' },
           { status: 400 }
         )
       }
       updatedGuide.slug = body.slug
-      
-      // Lösche die alte Datei
-      const { blobs: oldBlobs } = await list({ prefix: `guide-${existingGuide.slug}.json` })
-      if (oldBlobs.length > 0) {
-        await del(oldBlobs[0].url)
-      }
     }
 
-    // Überschreibe die Guide-Datei
-    await put(`guide-${updatedGuide.slug}.json`, JSON.stringify(updatedGuide, null, 2), {
-      access: 'public',
-      contentType: 'application/json'
-    })
+    // Aktualisiere den Guide in der Liste
+    allGuides[guideIndex] = updatedGuide
+    
+    // Speichere alle Guides
+    const saved = await saveAllGuides(allGuides)
+    
+    if (!saved) {
+      return NextResponse.json(
+        { error: 'Fehler beim Speichern des Guides' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
@@ -204,11 +248,28 @@ export async function DELETE(
       )
     }
 
-    // Lösche die Guide-Datei
-    const { blobs } = await list({ prefix: `guide-${existingGuide.slug}.json` })
+    // Lade alle Guides
+    const allGuides = await loadAllGuides()
+    const guideIndex = allGuides.findIndex((g: any) => g.slug === existingGuide.slug)
     
-    if (blobs.length > 0) {
-      await del(blobs[0].url)
+    if (guideIndex === -1) {
+      return NextResponse.json(
+        { error: 'Guide nicht in der Liste gefunden' },
+        { status: 404 }
+      )
+    }
+
+    // Entferne den Guide aus der Liste
+    allGuides.splice(guideIndex, 1)
+    
+    // Speichere alle Guides
+    const saved = await saveAllGuides(allGuides)
+    
+    if (!saved) {
+      return NextResponse.json(
+        { error: 'Fehler beim Löschen des Guides' },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({
