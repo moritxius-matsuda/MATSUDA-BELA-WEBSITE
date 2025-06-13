@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { categories, operatingSystems, difficulties } from '@/data/guides'
 
 interface GuideSection {
@@ -14,6 +14,8 @@ interface GuideSection {
 export default function GuideEditorPage() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const editSlug = searchParams.get('edit')
   
   // Form state
   const [title, setTitle] = useState('')
@@ -29,10 +31,56 @@ export default function GuideEditorPage() {
   
   // Loading and error states
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [originalSlug, setOriginalSlug] = useState('')
 
   // Check permissions
   const hasAccess = user?.publicMetadata?.author === 1 || user?.publicMetadata?.admin === 1
+
+  // Lade bestehenden Guide wenn im Edit-Modus
+  useEffect(() => {
+    if (!editSlug || !user) return
+
+    const loadGuide = async () => {
+      setLoading(true)
+      try {
+        const response = await fetch(`/api/guides/${editSlug}`)
+        if (response.ok) {
+          const result = await response.json()
+          const guide = result.guide
+          
+          // Prüfe Berechtigung
+          if (!guide.canEdit) {
+            setError('Sie haben keine Berechtigung, diesen Guide zu bearbeiten.')
+            return
+          }
+
+          // Lade Guide-Daten in das Formular
+          setTitle(guide.title || '')
+          setDescription(guide.description || '')
+          setCategory(guide.category || 'Virtualisierung')
+          setSelectedOS(guide.operatingSystem || [])
+          setDifficulty(guide.difficulty || 'Anfänger')
+          setReadTime(guide.readTime || '')
+          setTags(guide.tags ? guide.tags.join(', ') : '')
+          setSections(guide.sections || [{ id: '1', type: 'text', content: '' }])
+          setIsEditMode(true)
+          setOriginalSlug(guide.slug)
+        } else {
+          setError('Guide nicht gefunden oder keine Berechtigung.')
+        }
+      } catch (error) {
+        console.error('Error loading guide:', error)
+        setError('Fehler beim Laden des Guides.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadGuide()
+  }, [editSlug, user])
 
   useEffect(() => {
     if (!isLoaded) return
@@ -44,13 +92,15 @@ export default function GuideEditorPage() {
   }, [isLoaded, user, hasAccess, router])
 
   // Loading state
-  if (!isLoaded) {
+  if (!isLoaded || loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="glass-card p-8 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            <p className="text-white/80">Lade Benutzerdaten...</p>
+            <p className="text-white/80">
+              {!isLoaded ? 'Lade Benutzerdaten...' : 'Lade Guide...'}
+            </p>
           </div>
         </div>
       </div>
@@ -152,7 +202,7 @@ export default function GuideEditorPage() {
         operatingSystem: selectedOS,
         difficulty,
         readTime: readTime.trim() || 'Unbekannt',
-        slug: generateSlug(title),
+        slug: isEditMode ? originalSlug : generateSlug(title),
         tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
         sections,
         author: user.fullName || user.firstName || user.emailAddresses[0].emailAddress,
@@ -160,8 +210,11 @@ export default function GuideEditorPage() {
         authorImage: user.imageUrl
       }
 
-      const response = await fetch('/api/guides', {
-        method: 'POST',
+      const url = isEditMode ? `/api/guides/${originalSlug}` : '/api/guides'
+      const method = isEditMode ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -175,17 +228,25 @@ export default function GuideEditorPage() {
       }
 
       // Erfolgreich gespeichert
-      alert(`Guide erfolgreich gespeichert!\nSlug: ${result.guide.slug}`)
+      const message = isEditMode 
+        ? 'Guide erfolgreich aktualisiert!' 
+        : `Guide erfolgreich gespeichert!\nSlug: ${result.guide.slug}`
+      alert(message)
       
-      // Formular zurücksetzen
-      setTitle('')
-      setDescription('')
-      setCategory('Virtualisierung')
-      setSelectedOS([])
-      setDifficulty('Anfänger')
-      setReadTime('')
-      setTags('')
-      setSections([{ id: '1', type: 'text', content: '' }])
+      if (isEditMode) {
+        // Zurück zum Guide
+        router.push(`/guide/${originalSlug}`)
+      } else {
+        // Formular zurücksetzen
+        setTitle('')
+        setDescription('')
+        setCategory('Virtualisierung')
+        setSelectedOS([])
+        setDifficulty('Anfänger')
+        setReadTime('')
+        setTags('')
+        setSections([{ id: '1', type: 'text', content: '' }])
+      }
       
     } catch (err: any) {
       setError(err.message || 'Fehler beim Speichern des Guides.')
