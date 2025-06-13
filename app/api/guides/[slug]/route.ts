@@ -54,15 +54,6 @@ async function canEditGuide(guide: any, userId: string): Promise<boolean> {
     const isAuthor = user.publicMetadata?.author === 1
     const isCreator = guide.createdBy === userId
     
-    console.log('Edit permission check:', {
-      userId,
-      guideCreatedBy: guide.createdBy,
-      isAdmin,
-      isAuthor,
-      isCreator,
-      canEdit: isAdmin || (isAuthor && isCreator)
-    })
-    
     // Admin kann alles bearbeiten, Author kann nur eigene Guides bearbeiten
     return isAdmin || (isAuthor && isCreator)
   } catch (error) {
@@ -193,8 +184,19 @@ export async function PUT(
       )
     }
 
-    // Speichere auch die individuelle Guide-Datei
+    // Aktualisiere die bestehende individuelle Guide-Datei
     try {
+      // Wenn der Slug geändert wurde, lösche die alte Datei und erstelle eine neue
+      if (body.slug && body.slug !== existingGuide.slug) {
+        // Lösche die alte Datei
+        const { blobs: oldBlobs } = await list({ prefix: `guide-${existingGuide.slug}.json` })
+        if (oldBlobs.length > 0) {
+          await del(oldBlobs[0].url)
+          console.log('Old individual guide file deleted:', oldBlobs[0].url)
+        }
+      }
+      
+      // Überschreibe/erstelle die Guide-Datei mit dem aktuellen Slug
       const individualGuideBlob = await put(`guide-${updatedGuide.slug}.json`, JSON.stringify(updatedGuide, null, 2), {
         access: 'public',
         contentType: 'application/json'
