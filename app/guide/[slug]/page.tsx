@@ -95,9 +95,10 @@ export default function DynamicGuidePage() {
     switch (section.type) {
       case 'text':
         return (
-          <div className="text-white/90 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
-            {section.content}
-          </div>
+          <div 
+            className="text-white/90 text-sm sm:text-base leading-relaxed prose prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: section.content }}
+          />
         )
       case 'code':
         return (

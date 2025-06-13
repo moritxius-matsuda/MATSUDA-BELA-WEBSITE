@@ -7,9 +7,10 @@ interface RichTextEditorProps {
   onChange: (value: string) => void
   placeholder?: string
   className?: string
+  darkMode?: boolean
 }
 
-export default function RichTextEditor({ value, onChange, placeholder, className = '' }: RichTextEditorProps) {
+export default function RichTextEditor({ value, onChange, placeholder, className = '', darkMode = false }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null)
   const [isEditing, setIsEditing] = useState(false)
 
@@ -37,14 +38,38 @@ export default function RichTextEditor({ value, onChange, placeholder, className
     }
   }, [value, isEditing])
 
+  const buttonClass = darkMode 
+    ? 'px-2 py-1 text-sm border border-white/20 text-white hover:bg-white/10 rounded'
+    : 'px-2 py-1 text-sm border border-gray-300 hover:bg-gray-200 rounded'
+
+  const toolbarClass = darkMode
+    ? 'border-b border-white/10 bg-black/40 p-2 flex flex-wrap gap-1'
+    : 'border-b border-gray-300 bg-gray-50 p-2 flex flex-wrap gap-1'
+
+  const containerClass = darkMode
+    ? `border border-white/20 rounded-md ${className}`
+    : `border border-gray-300 rounded-md ${className}`
+
+  const editorClass = darkMode
+    ? 'p-3 min-h-[200px] focus:outline-none prose max-w-none text-white bg-transparent'
+    : 'p-3 min-h-[200px] focus:outline-none prose max-w-none'
+
+  const placeholderClass = darkMode
+    ? 'absolute top-3 left-3 text-white/40 pointer-events-none'
+    : 'absolute top-3 left-3 text-gray-400 pointer-events-none'
+
+  const helpClass = darkMode
+    ? 'border-t border-white/10 px-3 py-2 text-xs text-white/60 bg-black/20'
+    : 'border-t border-gray-200 px-3 py-2 text-xs text-gray-500 bg-gray-50'
+
   return (
-    <div className={`border border-gray-300 rounded-md ${className}`}>
+    <div className={containerClass}>
       {/* Toolbar */}
-      <div className="border-b border-gray-300 p-2 flex flex-wrap gap-1 bg-gray-50">
+      <div className={toolbarClass}>
         <button
           type="button"
           onClick={() => formatText('bold')}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200 font-bold"
+          className={`${buttonClass} font-bold`}
           title="Fett"
         >
           B
@@ -52,7 +77,7 @@ export default function RichTextEditor({ value, onChange, placeholder, className
         <button
           type="button"
           onClick={() => formatText('italic')}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200 italic"
+          className={`${buttonClass} italic`}
           title="Kursiv"
         >
           I
@@ -60,18 +85,18 @@ export default function RichTextEditor({ value, onChange, placeholder, className
         <button
           type="button"
           onClick={() => formatText('underline')}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200 underline"
+          className={`${buttonClass} underline`}
           title="Unterstrichen"
         >
           U
         </button>
         
-        <div className="w-px bg-gray-300 mx-1"></div>
+        <div className={`w-px mx-1 ${darkMode ? 'bg-white/20' : 'bg-gray-300'}`}></div>
         
         <button
           type="button"
           onClick={() => formatText('insertUnorderedList')}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200"
+          className={buttonClass}
           title="Aufzählung"
         >
           • Liste
@@ -79,18 +104,18 @@ export default function RichTextEditor({ value, onChange, placeholder, className
         <button
           type="button"
           onClick={() => formatText('insertOrderedList')}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200"
+          className={buttonClass}
           title="Nummerierte Liste"
         >
           1. Liste
         </button>
         
-        <div className="w-px bg-gray-300 mx-1"></div>
+        <div className={`w-px mx-1 ${darkMode ? 'bg-white/20' : 'bg-gray-300'}`}></div>
         
         <button
           type="button"
           onClick={() => formatText('formatBlock', 'h3')}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200 font-bold"
+          className={`${buttonClass} font-bold`}
           title="Überschrift"
         >
           H3
@@ -98,7 +123,7 @@ export default function RichTextEditor({ value, onChange, placeholder, className
         <button
           type="button"
           onClick={() => formatText('formatBlock', 'h4')}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200 font-semibold"
+          className={`${buttonClass} font-semibold`}
           title="Unterüberschrift"
         >
           H4
@@ -106,18 +131,18 @@ export default function RichTextEditor({ value, onChange, placeholder, className
         <button
           type="button"
           onClick={() => formatText('formatBlock', 'p')}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200"
+          className={buttonClass}
           title="Absatz"
         >
           P
         </button>
         
-        <div className="w-px bg-gray-300 mx-1"></div>
+        <div className={`w-px mx-1 ${darkMode ? 'bg-white/20' : 'bg-gray-300'}`}></div>
         
         <button
           type="button"
           onClick={() => formatText('indent')}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200"
+          className={buttonClass}
           title="Einrücken"
         >
           →
@@ -125,23 +150,24 @@ export default function RichTextEditor({ value, onChange, placeholder, className
         <button
           type="button"
           onClick={() => formatText('outdent')}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200"
+          className={buttonClass}
           title="Ausrücken"
         >
           ←
         </button>
         
-        <div className="w-px bg-gray-300 mx-1"></div>
+        <div className={`w-px mx-1 ${darkMode ? 'bg-white/20' : 'bg-gray-300'}`}></div>
         
         <button
           type="button"
           onClick={() => {
             const code = prompt('Code eingeben:')
             if (code) {
-              formatText('insertHTML', `<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">${code}</code>`)
+              const codeClass = darkMode ? 'bg-white/10 px-1 py-0.5 rounded text-sm font-mono text-green-300' : 'bg-gray-100 px-1 py-0.5 rounded text-sm font-mono'
+              formatText('insertHTML', `<code class="${codeClass}">${code}</code>`)
             }
           }}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200 font-mono"
+          className={`${buttonClass} font-mono`}
           title="Code"
         >
           &lt;/&gt;
@@ -155,18 +181,18 @@ export default function RichTextEditor({ value, onChange, placeholder, className
               formatText('createLink', url)
             }
           }}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200"
+          className={buttonClass}
           title="Link"
         >
           🔗
         </button>
         
-        <div className="w-px bg-gray-300 mx-1"></div>
+        <div className={`w-px mx-1 ${darkMode ? 'bg-white/20' : 'bg-gray-300'}`}></div>
         
         <button
           type="button"
           onClick={() => formatText('removeFormat')}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-200 text-red-600"
+          className={`${buttonClass} ${darkMode ? 'text-red-400' : 'text-red-600'}`}
           title="Formatierung entfernen"
         >
           ✕
@@ -182,21 +208,21 @@ export default function RichTextEditor({ value, onChange, placeholder, className
           onPaste={handlePaste}
           onFocus={() => setIsEditing(true)}
           onBlur={() => setIsEditing(false)}
-          className="p-3 min-h-[200px] focus:outline-none prose max-w-none"
+          className={editorClass}
           style={{ whiteSpace: 'pre-wrap' }}
           suppressContentEditableWarning={true}
         />
         
         {/* Placeholder */}
         {!value && placeholder && (
-          <div className="absolute top-3 left-3 text-gray-400 pointer-events-none">
+          <div className={placeholderClass}>
             {placeholder}
           </div>
         )}
       </div>
       
       {/* Hilfetext */}
-      <div className="border-t border-gray-200 px-3 py-2 text-xs text-gray-500 bg-gray-50">
+      <div className={helpClass}>
         <strong>Tipp:</strong> Verwenden Sie die Toolbar-Buttons für Formatierung. 
         Für Code-Blöcke verwenden Sie den &lt;/&gt; Button.
       </div>

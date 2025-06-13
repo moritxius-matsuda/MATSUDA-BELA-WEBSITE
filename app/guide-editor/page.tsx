@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { categories, operatingSystems, difficulties } from '@/data/guides'
+import RichTextEditor from '@/components/RichTextEditor'
 
 interface GuideSection {
   id: string
@@ -35,6 +36,7 @@ export default function GuideEditorPage() {
   const [error, setError] = useState<string | null>(null)
   const [isEditMode, setIsEditMode] = useState(false)
   const [originalSlug, setOriginalSlug] = useState('')
+  const [customOS, setCustomOS] = useState('')
 
   // Check permissions
   const hasAccess = user?.publicMetadata?.author === 1 || user?.publicMetadata?.admin === 1
@@ -170,6 +172,17 @@ export default function GuideEditorPage() {
         ? prev.filter(item => item !== os)
         : [...prev, os]
     )
+  }
+
+  const addCustomOS = () => {
+    if (customOS.trim() && !selectedOS.includes(customOS.trim())) {
+      setSelectedOS(prev => [...prev, customOS.trim()])
+      setCustomOS('')
+    }
+  }
+
+  const removeCustomOS = (os: string) => {
+    setSelectedOS(prev => prev.filter(item => item !== os))
   }
 
   const generateSlug = (title: string) => {
@@ -425,7 +438,9 @@ export default function GuideEditorPage() {
               <label className="block text-white/80 text-sm font-medium mb-3">
                 Unterstützte Betriebssysteme
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              
+              {/* Standard Betriebssysteme */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 {operatingSystems.filter(os => os !== 'Alle').map(os => (
                   <label key={os} className="flex items-center cursor-pointer">
                     <input
@@ -444,6 +459,48 @@ export default function GuideEditorPage() {
                   </label>
                 ))}
               </div>
+
+              {/* Eigenes Betriebssystem hinzufügen */}
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={customOS}
+                  onChange={(e) => setCustomOS(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && addCustomOS()}
+                  className="flex-1 glass-input px-3 py-2 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+                  placeholder="Eigenes Betriebssystem hinzufügen..."
+                />
+                <button
+                  type="button"
+                  onClick={addCustomOS}
+                  className="glass-button text-white px-4 py-2 rounded-lg text-sm transition-all duration-300"
+                >
+                  Hinzufügen
+                </button>
+              </div>
+
+              {/* Ausgewählte eigene Betriebssysteme */}
+              {selectedOS.filter(os => !operatingSystems.includes(os)).length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-white/60 text-sm">Eigene Betriebssysteme:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedOS.filter(os => !operatingSystems.includes(os)).map(os => (
+                      <div key={os} className="flex items-center bg-blue-500/20 border border-blue-400/50 text-blue-300 px-3 py-1 rounded-lg">
+                        <span className="text-sm mr-2">{os}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeCustomOS(os)}
+                          className="text-blue-300 hover:text-blue-200"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -527,21 +584,34 @@ export default function GuideEditorPage() {
                   </div>
                 </div>
 
-                <textarea
-                  value={section.content}
-                  onChange={(e) => updateSection(section.id, e.target.value)}
-                  rows={section.type === 'code' ? 8 : section.type === 'path' ? 2 : 4}
-                  className={`w-full glass-input px-4 py-3 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400/50 resize-none ${
-                    section.type === 'code' ? 'font-mono text-sm' : ''
-                  }`}
-                  placeholder={
-                    section.type === 'text' 
-                      ? 'Schreibe hier deinen Text...'
-                      : section.type === 'code'
-                      ? 'Füge hier deinen Code ein...'
-                      : 'z.B. /etc/network/interfaces'
-                  }
-                />
+                {/* Content Input */}
+                {section.type === 'text' ? (
+                  <div className="rich-text-editor-dark">
+                    <RichTextEditor
+                      value={section.content}
+                      onChange={(value) => updateSection(section.id, value)}
+                      placeholder="Schreibe hier deinen Text..."
+                      className="border-white/20 bg-black/30"
+                      darkMode={true}
+                    />
+                  </div>
+                ) : section.type === 'code' ? (
+                  <textarea
+                    value={section.content}
+                    onChange={(e) => updateSection(section.id, e.target.value)}
+                    rows={8}
+                    className="w-full glass-input px-4 py-3 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400/50 resize-none font-mono text-sm"
+                    placeholder="Füge hier deinen Code ein..."
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    value={section.content}
+                    onChange={(e) => updateSection(section.id, e.target.value)}
+                    className="w-full glass-input px-4 py-3 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400/50 font-mono"
+                    placeholder="z.B. /etc/network/interfaces"
+                  />
+                )}
               </div>
             ))}
           </div>
