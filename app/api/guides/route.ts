@@ -2,41 +2,32 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
 import { put, list } from '@vercel/blob'
 
-const GUIDES_FILENAME = 'guides.json'
 
-// Lade alle Guides aus der zentralen guides.json
+
+// Lade alle individuellen Guide-Dateien
 async function loadAllGuides() {
   try {
-    const { blobs } = await list()
-    const guidesBlob = blobs.find(blob => blob.pathname === GUIDES_FILENAME)
+    const { blobs } = await list({ prefix: 'guide-' })
+    const guides = []
     
-    if (guidesBlob) {
-      const response = await fetch(guidesBlob.url)
-      if (response.ok) {
-        const data = await response.json()
-        return data.guides || []
+    for (const blob of blobs) {
+      if (blob.pathname.endsWith('.json')) {
+        try {
+          const response = await fetch(blob.url)
+          if (response.ok) {
+            const guide = await response.json()
+            guides.push(guide)
+          }
+        } catch (error) {
+          console.error(`Error loading guide ${blob.pathname}:`, error)
+        }
       }
     }
     
-    return []
+    return guides
   } catch (error) {
     console.error('Error loading guides:', error)
     return []
-  }
-}
-
-// Speichere alle Guides in der zentralen guides.json
-async function saveAllGuides(guides: any[]) {
-  try {
-    const blob = await put(GUIDES_FILENAME, JSON.stringify({ guides }, null, 2), {
-      access: 'public',
-      contentType: 'application/json'
-    })
-    
-    return blob
-  } catch (error) {
-    console.error('Error saving guides:', error)
-    return null
   }
 }
 
@@ -61,8 +52,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Lade bestehende Guides
-    const existingGuides = await loadAllGuides()
+    // Prüfe ob Slug bereits existiert
+    const { blobs } = await list({ prefix: `guide-${body.slug}.json` })
+    if (blobs.length > 0) {
+      return NextResponse.json(
+        { error: 'Ein Guide mit diesem Slug existiert bereits' },
+        { status: 400 }
+      )
+    }
     
     // Erstelle neuen Guide
     const newGuide = {
@@ -84,27 +81,12 @@ export async function POST(request: NextRequest) {
       createdBy: userId
     }
 
-    // Prüfe ob Slug bereits existiert
-    const slugExists = existingGuides.some((guide: any) => guide.slug === newGuide.slug)
-    if (slugExists) {
-      return NextResponse.json(
-        { error: 'Ein Guide mit diesem Slug existiert bereits' },
-        { status: 400 }
-      )
-    }
-
-    // Füge neuen Guide zur Liste hinzu
-    existingGuides.push(newGuide)
-    
-    // Speichere alle Guides in guides.json
-    const saved = await saveAllGuides(existingGuides)
-    
-    if (!saved) {
-      return NextResponse.json(
-        { error: 'Fehler beim Speichern des Guides' },
-        { status: 500 }
-      )
-    }
+    // Erstelle individuelle Guide-Datei ohne zufälligen Suffix
+    const guideBlob = await put(`guide-${newGuide.slug}.json`, JSON.stringify(newGuide, null, 2), {
+      access: 'public',
+      contentType: 'application/json',
+      addRandomSuffix: false  // Das ist der Schlüssel!
+    })
 
     return NextResponse.json({
       success: true,
