@@ -82,6 +82,19 @@ export default function Navbar() {
               </Link>
             )}
 
+            {user?.publicMetadata?.admin === 1 && (
+              <Link 
+                href="/admin/manage-guides" 
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  pathname === '/admin/manage-guides' 
+                    ? 'glass-button text-white shadow-lg' 
+                    : 'text-white/80 md:hover:text-white md:hover:glass-button'
+                }`}
+              >
+                Admin
+              </Link>
+            )}
+
             <Link 
               href="/impressum" 
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
@@ -167,6 +180,20 @@ export default function Navbar() {
                 </Link>
               )}
 
+              {user?.publicMetadata?.admin === 1 && (
+                <Link 
+                  href="/admin/manage-guides" 
+                  className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ${
+                    pathname === '/admin/manage-guides' 
+                      ? 'glass-button text-white' 
+                      : 'text-white/80'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Admin
+                </Link>
+              )}
+
               {user && hasEditorAccess && (
                 <Link 
                   href="/guide-editor" 
@@ -178,6 +205,20 @@ export default function Navbar() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Guide Editor
+                </Link>
+              )}
+
+              {user?.publicMetadata?.admin === 1 && (
+                <Link 
+                  href="/admin/manage-guides" 
+                  className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ${
+                    pathname === '/admin/manage-guides' 
+                      ? 'glass-button text-white' 
+                      : 'text-white/80'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Admin
                 </Link>
               )}
 
