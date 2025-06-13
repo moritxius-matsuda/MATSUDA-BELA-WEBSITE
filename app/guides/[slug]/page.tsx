@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 
 interface Guide {
   id: string
@@ -27,9 +28,48 @@ interface Guide {
 
 export default function GuidePage() {
   const params = useParams()
+  const router = useRouter()
+  const { user } = useUser()
   const [guide, setGuide] = useState<Guide | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  // Prüfe ob der User Admin oder Autor ist
+  const canEdit = user && guide && (
+    user.publicMetadata?.role === 'admin' || 
+    guide.createdBy === user.id ||
+    guide.author === user.fullName
+  )
+
+  const handleEdit = () => {
+    router.push(`/admin/edit-guide/${guide?.slug}`)
+  }
+
+  const handleDelete = async () => {
+    if (!guide || !confirm('Sind Sie sicher, dass Sie diesen Guide löschen möchten?')) {
+      return
+    }
+
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/guides/${guide.slug}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        alert('Guide erfolgreich gelöscht!')
+        router.push('/guides')
+      } else {
+        const data = await response.json()
+        alert(`Fehler beim Löschen: ${data.error}`)
+      }
+    } catch (error) {
+      alert('Netzwerkfehler beim Löschen')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   useEffect(() => {
     const fetchGuide = async () => {
@@ -96,15 +136,36 @@ export default function GuidePage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            {guide.operatingSystem.map((os) => (
-              <span key={os} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
-                {os}
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex items-center gap-2">
+              {guide.operatingSystem.map((os) => (
+                <span key={os} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                  {os}
+                </span>
+              ))}
+              <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
+                {guide.difficulty}
               </span>
-            ))}
-            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
-              {guide.difficulty}
-            </span>
+            </div>
+            
+            {/* Admin/Autor Buttons */}
+            {canEdit && (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleEdit}
+                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                >
+                  Bearbeiten
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {deleting ? 'Lösche...' : 'Löschen'}
+                </button>
+              </div>
+            )}
           </div>
           
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{guide.title}</h1>

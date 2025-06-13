@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { list } from '@vercel/blob'
+import { list, put } from '@vercel/blob'
+import { auth } from '@clerk/nextjs'
 
 const BLOB_FILENAME = 'guides.json'
 
@@ -56,6 +57,140 @@ export async function GET(
     console.error('API Error:', error)
     return NextResponse.json(
       { error: 'Fehler beim Laden des Guides' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+) {
+  try {
+    const { userId } = auth()
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Nicht authentifiziert' },
+        { status: 401 }
+      )
+    }
+
+    // Lade alle Guides
+    const guides = await loadGuides()
+    const guideIndex = guides.findIndex((g: any) => g.slug === params.slug)
+    
+    if (guideIndex === -1) {
+      return NextResponse.json(
+        { error: 'Guide nicht gefunden' },
+        { status: 404 }
+      )
+    }
+
+    const guide = guides[guideIndex]
+    
+    // Prüfe Berechtigung (Admin oder Autor)
+    if (guide.createdBy !== userId) {
+      return NextResponse.json(
+        { error: 'Keine Berechtigung zum Löschen' },
+        { status: 403 }
+      )
+    }
+
+    // Entferne Guide aus Array
+    guides.splice(guideIndex, 1)
+    
+    // Speichere aktualisierte Liste
+    await put(BLOB_FILENAME, JSON.stringify({ guides }, null, 2), {
+      access: 'public',
+      contentType: 'application/json'
+    })
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Guide erfolgreich gelöscht' 
+    })
+  } catch (error) {
+    console.error('Delete Error:', error)
+    return NextResponse.json(
+      { error: 'Fehler beim Löschen des Guides' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+) {
+  try {
+    const { userId } = auth()
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Nicht authentifiziert' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+
+    // Lade alle Guides
+    const guides = await loadGuides()
+    const guideIndex = guides.findIndex((g: any) => g.slug === params.slug)
+    
+    if (guideIndex === -1) {
+      return NextResponse.json(
+        { error: 'Guide nicht gefunden' },
+        { status: 404 }
+      )
+    }
+
+    const existingGuide = guides[guideIndex]
+    
+    // Prüfe Berechtigung (Admin oder Autor)
+    if (existingGuide.createdBy !== userId) {
+      return NextResponse.json(
+        { error: 'Keine Berechtigung zum Bearbeiten' },
+        { status: 403 }
+      )
+    }
+
+    // Aktualisiere Guide
+    const updatedGuide = {
+      ...existingGuide,
+      title: body.title || existingGuide.title,
+      description: body.description || existingGuide.description,
+      category: body.category || existingGuide.category,
+      operatingSystem: body.operatingSystem || existingGuide.operatingSystem,
+      difficulty: body.difficulty || existingGuide.difficulty,
+      readTime: body.readTime || existingGuide.readTime,
+      tags: body.tags || existingGuide.tags,
+      sections: body.sections || existingGuide.sections,
+      author: body.author || existingGuide.author,
+      authorRole: body.authorRole || existingGuide.authorRole,
+      authorImage: body.authorImage || existingGuide.authorImage,
+      updatedAt: new Date().toISOString()
+    }
+
+    // Ersetze Guide im Array
+    guides[guideIndex] = updatedGuide
+    
+    // Speichere aktualisierte Liste
+    await put(BLOB_FILENAME, JSON.stringify({ guides }, null, 2), {
+      access: 'public',
+      contentType: 'application/json'
+    })
+
+    return NextResponse.json({ 
+      success: true, 
+      guide: updatedGuide,
+      message: 'Guide erfolgreich aktualisiert' 
+    })
+  } catch (error) {
+    console.error('Update Error:', error)
+    return NextResponse.json(
+      { error: 'Fehler beim Aktualisieren des Guides' },
       { status: 500 }
     )
   }
