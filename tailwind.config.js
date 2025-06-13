@@ -5,10 +5,6 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  darkMode: {
-    selector: '.dark-mode',
-    variable: '--dark-mode',
-  },
   theme: {
     extend: {
       backgroundImage: {
