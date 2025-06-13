@@ -5,7 +5,7 @@ export default function ImpressumPage() {
         <div className="grid md:grid-cols-2 gap-8">
           {/* Impressum */}
           <div className="glass-card p-8">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-6">
+            <h1 className="text-3xl font-bold text-white mb-6">
               Impressum
             </h1>
             
@@ -64,7 +64,7 @@ export default function ImpressumPage() {
 
           {/* Datenschutzerklärung */}
           <div className="glass-card p-8">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-6">
+            <h1 className="text-3xl font-bold text-white mb-6">
               Datenschutzerklärung
             </h1>
             

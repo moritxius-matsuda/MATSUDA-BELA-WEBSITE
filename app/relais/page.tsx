@@ -157,7 +157,7 @@ export default function RelaisPage() {
       <div className="mb-8">
         <div className="glass-card p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold text-white">
               Relais Steuerung
             </h1>
             {refreshing && (
