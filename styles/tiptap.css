@@ -49,6 +49,68 @@
   color: white;
 }
 
+/* Überschreibe Prose-Styles für Listen auf Guide-Seiten */
+.prose ul li::marker {
+  color: white !important;
+}
+
+.prose ol li::marker {
+  color: white !important;
+}
+
+.prose ul li {
+  color: white !important;
+}
+
+.prose ol li {
+  color: white !important;
+}
+
+.prose ul {
+  color: white !important;
+}
+
+.prose ol {
+  color: white !important;
+}
+
+/* Spezifische Styles für Guide-Inhalte */
+.prose-invert ul li::marker {
+  color: white !important;
+}
+
+.prose-invert ol li::marker {
+  color: white !important;
+}
+
+.prose-invert ul li {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.prose-invert ol li {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Allgemeine Liste-Styles für alle Bereiche */
+ul li::marker {
+  color: white !important;
+}
+
+ol li::marker {
+  color: white !important;
+}
+
+/* Für HTML-Inhalte in Guides */
+[class*="prose"] ul li::marker,
+[class*="prose"] ol li::marker {
+  color: white !important;
+}
+
+[class*="prose"] ul li,
+[class*="prose"] ol li {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
 .ProseMirror blockquote {
   border-left: 4px solid #3b82f6;
   padding-left: 1rem;
@@ -193,51 +255,3 @@
   margin: 2rem 0;
 }
 
-/* Path block styles */
-.ProseMirror div[data-type="path"] {
-  background-color: rgba(59, 130, 246, 0.1) !important;
-  border: 2px solid rgba(59, 130, 246, 0.5) !important;
-  border-radius: 0.5rem !important;
-  padding: 0.75rem !important;
-  font-family: 'Courier New', monospace !important;
-  color: #93c5fd !important;
-  margin: 0.5rem 0 !important;
-  font-size: 0.875rem !important;
-  display: block !important;
-  outline: none !important;
-  min-height: 1.5rem !important;
-  cursor: text !important;
-  white-space: pre-wrap !important;
-}
-
-.ProseMirror div[data-type="path"]:hover {
-  border-color: rgba(59, 130, 246, 0.7) !important;
-  background-color: rgba(59, 130, 246, 0.15) !important;
-}
-
-.ProseMirror div[data-type="path"]:focus {
-  border-color: rgba(59, 130, 246, 0.8) !important;
-  background-color: rgba(59, 130, 246, 0.2) !important;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
-}
-
-/* Bessere Sichtbarkeit für Pfad-Blöcke */
-.ProseMirror div[data-type="path"]:focus-within {
-  border-color: rgba(59, 130, 246, 0.8) !important;
-  background-color: rgba(59, 130, 246, 0.2) !important;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
-}
-
-/* Stelle sicher, dass Text in Pfad-Blöcken sichtbar ist */
-.ProseMirror div[data-type="path"] * {
-  color: #93c5fd !important;
-  font-family: 'Courier New', monospace !important;
-}
-
-/* Placeholder für leere Pfad-Blöcke */
-.ProseMirror div[data-type="path"]:empty::before {
-  content: "Pfad eingeben...";
-  color: rgba(147, 197, 253, 0.5);
-  pointer-events: none;
-  font-style: italic;
-}

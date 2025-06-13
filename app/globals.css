@@ -266,3 +266,40 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Globale Listen-Styles für weiße Punkte */
+ul li::marker,
+ol li::marker {
+  color: white !important;
+}
+
+ul li,
+ol li {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Spezifische Überschreibung für Prose-Klassen */
+.prose ul li::marker,
+.prose ol li::marker,
+.prose-invert ul li::marker,
+.prose-invert ol li::marker {
+  color: white !important;
+}
+
+.prose ul li,
+.prose ol li,
+.prose-invert ul li,
+.prose-invert ol li {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Für alle HTML-Inhalte mit dangerouslySetInnerHTML */
+div[class*="prose"] ul li::marker,
+div[class*="prose"] ol li::marker {
+  color: white !important;
+}
+
+div[class*="prose"] ul li,
+div[class*="prose"] ol li {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
