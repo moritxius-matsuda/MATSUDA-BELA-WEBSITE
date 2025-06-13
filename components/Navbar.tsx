@@ -96,6 +96,17 @@ export default function Navbar() {
             )}
 
             <Link 
+              href="/timer" 
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                pathname === '/timer' 
+                  ? 'glass-button text-white shadow-lg' 
+                  : 'text-white/80 md:hover:text-white md:hover:glass-button'
+              }`}
+            >
+              Timer
+            </Link>
+
+            <Link 
               href="/impressum" 
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                 pathname === '/impressum' 
