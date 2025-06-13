@@ -15,6 +15,7 @@ interface Guide {
   tags: string[]
   author: string
   publishedAt: string
+  createdBy?: string
 }
 
 export default function GuidesPage() {

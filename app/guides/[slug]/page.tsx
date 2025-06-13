@@ -24,6 +24,7 @@ interface Guide {
   authorImage: string
   publishedAt: string
   updatedAt: string
+  createdBy?: string
 }
 
 export default function GuidePage() {
