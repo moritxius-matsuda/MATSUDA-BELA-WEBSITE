@@ -33,10 +33,20 @@
 .ProseMirror ul, .ProseMirror ol {
   margin: 0.5rem 0;
   padding-left: 1.5rem;
+  color: white;
 }
 
 .ProseMirror li {
   margin: 0.25rem 0;
+  color: white;
+}
+
+.ProseMirror ul li::marker {
+  color: white;
+}
+
+.ProseMirror ol li::marker {
+  color: white;
 }
 
 .ProseMirror blockquote {
@@ -181,4 +191,21 @@
   border: none;
   border-top: 2px solid rgba(255, 255, 255, 0.2);
   margin: 2rem 0;
+}
+
+/* Path node styles */
+.ProseMirror .path-node {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 2px solid rgba(59, 130, 246, 0.5);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  font-family: 'Courier New', monospace;
+  color: #93c5fd;
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.ProseMirror .path-node:hover {
+  border-color: rgba(59, 130, 246, 0.7);
+  background-color: rgba(59, 130, 246, 0.15);
 }

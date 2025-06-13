@@ -8,7 +8,7 @@ import SimpleTiptapEditor from '@/components/SimpleTiptapEditor'
 
 interface GuideSection {
   id: string
-  type: 'text' | 'code' | 'path'
+  type: 'text'
   content: string
 }
 
@@ -132,10 +132,10 @@ export default function GuideEditorPage() {
     )
   }
 
-  const addSection = (type: 'text' | 'code' | 'path') => {
+  const addSection = () => {
     const newSection: GuideSection = {
       id: Date.now().toString(),
-      type,
+      type: 'text',
       content: ''
     }
     setSections([...sections, newSection])
@@ -270,28 +270,11 @@ export default function GuideEditorPage() {
   }
 
   const getSectionIcon = (type: string) => {
-    switch (type) {
-      case 'text':
-        return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-          </svg>
-        )
-      case 'code':
-        return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-          </svg>
-        )
-      case 'path':
-        return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
-          </svg>
-        )
-      default:
-        return null
-    }
+    return (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+      </svg>
+    )
   }
 
   return (
@@ -511,31 +494,13 @@ export default function GuideEditorPage() {
             <h2 className="text-xl font-semibold text-white">Guide Inhalt</h2>
             <div className="flex space-x-2">
               <button
-                onClick={() => addSection('text')}
-                className="glass-button text-white px-3 py-2 rounded-lg text-sm transition-all duration-300 flex items-center"
+                onClick={addSection}
+                className="glass-button text-white px-4 py-2 rounded-lg text-sm transition-all duration-300 flex items-center"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Text
-              </button>
-              <button
-                onClick={() => addSection('code')}
-                className="glass-button text-white px-3 py-2 rounded-lg text-sm transition-all duration-300 flex items-center"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                </svg>
-                Code
-              </button>
-              <button
-                onClick={() => addSection('path')}
-                className="glass-button text-white px-3 py-2 rounded-lg text-sm transition-all duration-300 flex items-center"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
-                </svg>
-                Pfad
+                Sektion hinzufügen
               </button>
             </div>
           </div>
@@ -547,8 +512,8 @@ export default function GuideEditorPage() {
                   <div className="flex items-center space-x-2">
                     <div className="flex items-center text-white/60">
                       {getSectionIcon(section.type)}
-                      <span className="ml-2 text-sm font-medium capitalize">
-                        {section.type === 'text' ? 'Text' : section.type === 'code' ? 'Code' : 'Pfad'}
+                      <span className="ml-2 text-sm font-medium">
+                        Text Sektion {index + 1}
                       </span>
                     </div>
                   </div>
@@ -585,31 +550,13 @@ export default function GuideEditorPage() {
                 </div>
 
                 {/* Content Input */}
-                {section.type === 'text' ? (
-                  <div>
-                    <SimpleTiptapEditor
-                      content={section.content}
-                      onChange={(content) => updateSection(section.id, content)}
-                      placeholder="Schreibe hier deinen Text..."
-                    />
-                  </div>
-                ) : section.type === 'code' ? (
-                  <textarea
-                    value={section.content}
-                    onChange={(e) => updateSection(section.id, e.target.value)}
-                    rows={8}
-                    className="w-full glass-input px-4 py-3 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400/50 resize-none font-mono text-sm"
-                    placeholder="Füge hier deinen Code ein..."
+                <div>
+                  <SimpleTiptapEditor
+                    content={section.content}
+                    onChange={(content) => updateSection(section.id, content)}
+                    placeholder="Schreibe hier deinen Text... Verwende die Toolbar für Code-Blöcke und Pfade."
                   />
-                ) : (
-                  <input
-                    type="text"
-                    value={section.content}
-                    onChange={(e) => updateSection(section.id, e.target.value)}
-                    className="w-full glass-input px-4 py-3 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400/50 font-mono"
-                    placeholder="z.B. /etc/network/interfaces"
-                  />
-                )}
+                </div>
               </div>
             ))}
           </div>
