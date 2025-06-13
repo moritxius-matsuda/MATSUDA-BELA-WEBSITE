@@ -23,7 +23,10 @@ export default function Navbar() {
                 className="h-8 w-auto opacity-90 hover:opacity-100 transition-opacity duration-300"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextElementSibling.style.display = 'block';
+                  const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                  if (nextElement) {
+                    nextElement.style.display = 'block';
+                  }
                 }}
               />
               <span 
