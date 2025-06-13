@@ -45,7 +45,7 @@ async function saveGuides(guides: any[]) {
 // Prüfe ob der Benutzer berechtigt ist, den Guide zu bearbeiten
 function canEditGuide(guide: any, userId: string): boolean {
   // Admin-Check (hier können Sie spezifische Admin-User-IDs hinzufügen)
-  const adminUserIds = [
+  const adminUserIds: string[] = [
     // Fügen Sie hier Admin-User-IDs hinzu
     // 'user_admin_id_1',
     // 'user_admin_id_2'

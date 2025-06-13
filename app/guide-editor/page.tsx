@@ -302,10 +302,10 @@ export default function GuideEditorPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">
-                Guide Editor
+                {isEditMode ? 'Guide bearbeiten' : 'Guide Editor'}
               </h1>
               <p className="text-white/80">
-                Erstelle einen neuen Guide für die Community
+                {isEditMode ? 'Bearbeite den bestehenden Guide' : 'Erstelle einen neuen Guide für die Community'}
               </p>
             </div>
             <div className="flex items-center space-x-3">
@@ -627,14 +627,14 @@ export default function GuideEditorPage() {
             {saving ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Speichern...
+                {isEditMode ? 'Aktualisieren...' : 'Speichern...'}
               </>
             ) : (
               <>
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
-                Guide speichern
+                {isEditMode ? 'Guide aktualisieren' : 'Guide speichern'}
               </>
             )}
           </button>
