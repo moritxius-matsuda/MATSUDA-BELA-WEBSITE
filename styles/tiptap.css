@@ -193,19 +193,36 @@
   margin: 2rem 0;
 }
 
-/* Path node styles */
-.ProseMirror .path-node {
-  background-color: rgba(59, 130, 246, 0.1);
-  border: 2px solid rgba(59, 130, 246, 0.5);
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  font-family: 'Courier New', monospace;
-  color: #93c5fd;
-  margin: 0.5rem 0;
-  font-size: 0.875rem;
+/* Path block styles */
+.ProseMirror div[data-type="path"] {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  border: 2px solid rgba(59, 130, 246, 0.5) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.75rem !important;
+  font-family: 'Courier New', monospace !important;
+  color: #93c5fd !important;
+  margin: 0.5rem 0 !important;
+  font-size: 0.875rem !important;
+  display: block !important;
+  outline: none !important;
+  min-height: 1.5rem;
 }
 
-.ProseMirror .path-node:hover {
-  border-color: rgba(59, 130, 246, 0.7);
-  background-color: rgba(59, 130, 246, 0.15);
+.ProseMirror div[data-type="path"]:hover {
+  border-color: rgba(59, 130, 246, 0.7) !important;
+  background-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+.ProseMirror div[data-type="path"]:focus {
+  border-color: rgba(59, 130, 246, 0.8) !important;
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Placeholder text für leere Pfad-Blöcke */
+.ProseMirror div[data-type="path"]:empty::before {
+  content: "Pfad hier eingeben... (z.B. /etc/network/interfaces)";
+  color: rgba(147, 197, 253, 0.6);
+  pointer-events: none;
+  font-style: italic;
 }
