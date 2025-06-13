@@ -130,7 +130,6 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     const guides = await loadGuides()
-    console.log('GET /api/guides - Loaded guides:', guides.length)
     return NextResponse.json({ guides })
   } catch (error) {
     console.error('API Error:', error)
