@@ -36,14 +36,15 @@ export default function GuidePage() {
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  // Prüfe ob der User Admin oder Autor ist
+  // Prüfe ob der User Admin oder Autor ist - vereinfacht für Tests
   const canEdit = user && guide && (
-    user.publicMetadata?.role === 'admin' || 
     user.publicMetadata?.admin === 1 ||
-    user.publicMetadata?.author === 1 ||
-    guide.createdBy === user.id ||
-    guide.author === user.fullName
+    user.publicMetadata?.author === 1
   )
+  
+  // Debug: Zeige Berechtigungen in der Konsole
+  console.log('User metadata:', user?.publicMetadata)
+  console.log('Can edit:', canEdit)
 
   const handleEdit = () => {
     router.push(`/admin/simple-edit/${guide?.slug}`)

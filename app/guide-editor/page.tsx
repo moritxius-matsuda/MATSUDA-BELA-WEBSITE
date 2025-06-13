@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { categories, operatingSystems, difficulties } from '@/data/guides'
+import RichTextEditor from '@/components/RichTextEditor'
 
 interface GuideSection {
   id: string
@@ -507,21 +508,30 @@ export default function GuideEditorPage() {
                   </div>
                 </div>
 
-                <textarea
-                  value={section.content}
-                  onChange={(e) => updateSection(section.id, e.target.value)}
-                  rows={section.type === 'code' ? 8 : section.type === 'path' ? 2 : 4}
-                  className={`w-full glass-input px-4 py-3 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400/50 resize-none ${
-                    section.type === 'code' ? 'font-mono text-sm' : ''
-                  }`}
-                  placeholder={
-                    section.type === 'text' 
-                      ? 'Schreibe hier deinen Text...'
-                      : section.type === 'code'
-                      ? 'Füge hier deinen Code ein...'
-                      : 'z.B. /etc/network/interfaces'
-                  }
-                />
+                {section.type === 'text' ? (
+                  <div className="bg-white rounded-lg">
+                    <RichTextEditor
+                      value={section.content}
+                      onChange={(content) => updateSection(section.id, content)}
+                      placeholder="Schreibe hier deinen Text..."
+                      className="min-h-[200px]"
+                    />
+                  </div>
+                ) : (
+                  <textarea
+                    value={section.content}
+                    onChange={(e) => updateSection(section.id, e.target.value)}
+                    rows={section.type === 'code' ? 8 : 2}
+                    className={`w-full glass-input px-4 py-3 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400/50 resize-none ${
+                      section.type === 'code' ? 'font-mono text-sm' : ''
+                    }`}
+                    placeholder={
+                      section.type === 'code'
+                        ? 'Füge hier deinen Code ein...'
+                        : 'z.B. /etc/network/interfaces'
+                    }
+                  />
+                )}
               </div>
             ))}
           </div>
