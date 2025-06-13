@@ -14,7 +14,7 @@ export default function Navbar() {
   return (
     <nav className="glass-navbar fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href="/" className="text-white text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               Matsuda Béla
@@ -82,6 +82,12 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
+            
+            <img 
+              src="/rechteck-weiß.png" 
+              alt="Matsuda Béla Logo" 
+              className="h-10 w-auto opacity-80 hover:opacity-100 transition-opacity duration-300 ml-4"
+            />
           </div>
         </div>
       </div>
