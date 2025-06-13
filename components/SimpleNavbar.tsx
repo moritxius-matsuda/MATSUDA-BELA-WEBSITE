@@ -49,17 +49,6 @@ export default function SimpleNavbar() {
             </Link>
 
             <Link 
-              href="/proxmox-guide" 
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                pathname === '/proxmox-guide' 
-                  ? 'glass-button text-white shadow-lg' 
-                  : 'text-white/80 md:hover:text-white md:hover:glass-button'
-              }`}
-            >
-              Proxmox Guide
-            </Link>
-
-            <Link 
               href="/impressum" 
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                 pathname === '/impressum' 
@@ -117,18 +106,6 @@ export default function SimpleNavbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
-              </Link>
-
-              <Link 
-                href="/proxmox-guide" 
-                className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ${
-                  pathname === '/proxmox-guide' 
-                    ? 'glass-button text-white' 
-                    : 'text-white/80'
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Proxmox Guide
               </Link>
 
               <Link 
