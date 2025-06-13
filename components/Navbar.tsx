@@ -93,7 +93,6 @@ export default function Navbar() {
               >
                 Blob Admin
               </Link>
-              </a>
             )}
 
             <Link 
