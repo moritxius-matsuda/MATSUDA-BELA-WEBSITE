@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
 
-const GUIDES_FILE = path.join(process.cwd(), 'data', 'saved-guides.json')
-
-function loadGuides() {
+// Lade alle gespeicherten Guides aus Vercel Blob
+async function loadGuides() {
   try {
-    if (!fs.existsSync(GUIDES_FILE)) {
+    // Verwende die GET API Route
+    const response = await fetch(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/guides`)
+    
+    if (response.ok) {
+      const data = await response.json()
+      return data.guides || []
+    } else {
       return []
     }
-    const data = fs.readFileSync(GUIDES_FILE, 'utf8')
-    return JSON.parse(data)
   } catch (error) {
     console.error('Error loading guides:', error)
     return []
@@ -22,7 +23,7 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const guides = loadGuides()
+    const guides = await loadGuides()
     const guide = guides.find((g: any) => g.slug === params.slug)
     
     if (!guide) {

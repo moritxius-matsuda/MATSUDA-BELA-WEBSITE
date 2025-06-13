@@ -1,42 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
-import fs from 'fs'
-import path from 'path'
+import { put, list } from '@vercel/blob'
 
-const GUIDES_FILE = path.join(process.cwd(), 'data', 'saved-guides.json')
+const BLOB_FILENAME = 'guides.json'
 
-// Stelle sicher, dass die Datei existiert
-function ensureGuidesFile() {
-  const dir = path.dirname(GUIDES_FILE)
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true })
-  }
-  if (!fs.existsSync(GUIDES_FILE)) {
-    fs.writeFileSync(GUIDES_FILE, JSON.stringify([], null, 2))
-  }
-}
-
-// Lade alle gespeicherten Guides
-function loadGuides() {
-  ensureGuidesFile()
+// Lade alle gespeicherten Guides aus Vercel Blob
+async function loadGuides() {
   try {
-    const data = fs.readFileSync(GUIDES_FILE, 'utf8')
-    return JSON.parse(data)
+    // Liste alle Blobs auf
+    const { blobs } = await list()
+    const guidesBlob = blobs.find(blob => blob.pathname === BLOB_FILENAME)
+    
+    if (guidesBlob) {
+      // Lade den Inhalt des Blobs
+      const response = await fetch(guidesBlob.url)
+      if (response.ok) {
+        const data = await response.json()
+        return data.guides || []
+      }
+    }
+    
+    return []
   } catch (error) {
-    console.error('Error loading guides:', error)
+    console.error('Error loading guides from blob:', error)
     return []
   }
 }
 
-// Speichere Guides
-function saveGuides(guides: any[]) {
-  ensureGuidesFile()
+// Speichere Guides in Vercel Blob
+async function saveGuides(guides: any[]) {
   try {
-    fs.writeFileSync(GUIDES_FILE, JSON.stringify(guides, null, 2))
-    return true
+    const blob = await put(BLOB_FILENAME, JSON.stringify({ guides }, null, 2), {
+      access: 'public',
+      contentType: 'application/json'
+    })
+    
+    return blob
   } catch (error) {
-    console.error('Error saving guides:', error)
-    return false
+    console.error('Error saving guides to blob:', error)
+    return null
   }
 }
 
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Lade bestehende Guides
-    const existingGuides = loadGuides()
+    const existingGuides = await loadGuides()
     
     // Erstelle neuen Guide
     const newGuide = {
@@ -101,7 +103,7 @@ export async function POST(request: NextRequest) {
     existingGuides.push(newGuide)
     
     // Speichere alle Guides
-    const saved = saveGuides(existingGuides)
+    const saved = await saveGuides(existingGuides)
     
     if (!saved) {
       return NextResponse.json(
@@ -127,7 +129,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const guides = loadGuides()
+    const guides = await loadGuides()
     return NextResponse.json({ guides })
   } catch (error) {
     console.error('API Error:', error)
