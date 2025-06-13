@@ -16,6 +16,7 @@ interface Guide {
   sections: Array<{
     title: string
     content: string
+    path?: string
   }>
   author: string
   authorRole: string
@@ -136,6 +137,14 @@ export default function GuidePage() {
               <div className="prose max-w-none">
                 <div dangerouslySetInnerHTML={{ __html: section.content.replace(/\n/g, '<br>') }} />
               </div>
+              {/* Pfad nach dem Content anzeigen, falls vorhanden */}
+              {section.path && (
+                <div className="mt-4 p-3 bg-gray-100 rounded-md border-l-4 border-blue-500">
+                  <p className="text-sm font-mono text-gray-700">
+                    <span className="font-semibold text-blue-600">Pfad:</span> {section.path}
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>
