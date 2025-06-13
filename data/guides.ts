@@ -10,6 +10,8 @@ export interface Guide {
   tags: string[]
   publishedAt: string
   updatedAt: string
+  author: string
+  authorRole?: string
 }
 
 export const guides: Guide[] = [
@@ -24,7 +26,9 @@ export const guides: Guide[] = [
     slug: 'proxmox-guide',
     tags: ['proxmox', 'virtualisierung', 'hetzner', 'vps', 'lan', 'netzwerk', 'dhcp', 'iptables'],
     publishedAt: '2024-01-15',
-    updatedAt: '2024-01-15'
+    updatedAt: '2024-01-15',
+    author: 'Matsuda Béla',
+    authorRole: 'System Administrator'
   }
   // Hier können weitere Guides hinzugefügt werden
 ]
@@ -57,3 +61,7 @@ export const difficulties = [
   'Fortgeschritten',
   'Experte'
 ]
+
+export function getGuideBySlug(slug: string): Guide | undefined {
+  return guides.find(guide => guide.slug === slug)
+}
