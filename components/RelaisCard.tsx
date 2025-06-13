@@ -4,10 +4,9 @@ interface RelaisCardProps {
   relaisNumber: number
   isOpen: boolean
   onToggle: (relaisNumber: number, action: 'open' | 'close') => Promise<void>
-  loading: boolean
 }
 
-export default function RelaisCard({ relaisNumber, isOpen, onToggle, loading }: RelaisCardProps) {
+export default function RelaisCard({ relaisNumber, isOpen, onToggle }: RelaisCardProps) {
   const handleToggle = async () => {
     const action = isOpen ? 'close' : 'open'
     await onToggle(relaisNumber, action)
@@ -40,23 +39,13 @@ export default function RelaisCard({ relaisNumber, isOpen, onToggle, loading }: 
 
       <button
         onClick={handleToggle}
-        disabled={loading}
-        className={`w-full py-3 px-4 rounded-full text-sm font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`w-full py-3 px-4 rounded-full text-sm font-medium transition-all duration-300 ${
           isOpen
             ? 'glass-button text-red-300 hover:text-red-200 hover:shadow-red-400/20'
             : 'glass-button text-green-300 hover:text-green-200 hover:shadow-green-400/20'
         }`}
       >
-        {loading ? (
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-            Wird verarbeitet...
-          </div>
-        ) : (
-          <>
-            {isOpen ? 'AUSSCHALTEN' : 'EINSCHALTEN'}
-          </>
-        )}
+        {isOpen ? 'AUSSCHALTEN' : 'EINSCHALTEN'}
       </button>
     </div>
   )

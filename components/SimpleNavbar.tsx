@@ -27,6 +27,17 @@ export default function SimpleNavbar() {
             >
               Home
             </Link>
+
+            <Link 
+              href="/impressum" 
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                pathname === '/impressum' 
+                  ? 'glass-button text-white shadow-lg' 
+                  : 'text-white/80 hover:text-white hover:glass-button'
+              }`}
+            >
+              Impressum
+            </Link>
             
             <div className="flex items-center space-x-3">
               <Link 

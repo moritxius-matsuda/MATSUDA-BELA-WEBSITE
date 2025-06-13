@@ -117,15 +117,6 @@ export default function SimpleAuth({ children, requireAuth = false, requireRelai
               Anmelden
             </button>
           </form>
-          
-          <div className="mt-8 text-sm text-white/70">
-            <p className="font-semibold text-white/90 mb-2">Test-Accounts:</p>
-            <div className="space-y-1">
-              <p>Admin: admin@moritxius.de / admin123</p>
-              <p>Relais: relais@moritxius.de / relais123</p>
-              <p>User: user@moritxius.de / user123</p>
-            </div>
-          </div>
         </div>
       </div>
     )

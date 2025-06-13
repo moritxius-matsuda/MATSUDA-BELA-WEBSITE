@@ -21,6 +21,7 @@ export default function RelaisPage() {
   const router = useRouter()
   const [relaisStatus, setRelaisStatus] = useState<RelaisStatus>({})
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Erstelle Array mit 16 Relais
@@ -30,9 +31,14 @@ export default function RelaisPage() {
   const hasAccess = user?.publicMetadata?.relais === 1 || user?.publicMetadata?.admin === 1
 
   // useCallback für fetchStatus um Abhängigkeiten zu stabilisieren
-  const fetchStatus = useCallback(async () => {
+  const fetchStatus = useCallback(async (isManualRefresh = false) => {
     try {
-      setLoading(true)
+      if (isManualRefresh) {
+        setRefreshing(true)
+      } else if (Object.keys(relaisStatus).length === 0) {
+        setLoading(true)
+      }
+      
       const response = await fetch('https://door.moritxius.de/api/status', {
         method: 'GET',
         headers: {
@@ -53,8 +59,9 @@ export default function RelaisPage() {
       console.error('Fehler beim Abrufen des Status:', err)
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
-  }, []) // Leere Abhängigkeitsliste für useCallback
+  }, [relaisStatus]) // relaisStatus als Abhängigkeit hinzugefügt
 
   const toggleRelais = async (relaisNumber: number, action: 'open' | 'close') => {
     try {
@@ -90,8 +97,8 @@ export default function RelaisPage() {
     // Lade Status initial
     fetchStatus()
     
-    // Status alle 5 Sekunden aktualisieren
-    const interval = setInterval(fetchStatus, 5000)
+    // Status alle 3 Sekunden aktualisieren
+    const interval = setInterval(() => fetchStatus(false), 3000)
     return () => clearInterval(interval)
   }, [isLoaded, user, hasAccess, router, fetchStatus])
 
@@ -149,25 +156,25 @@ export default function RelaisPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="glass-card p-6 mb-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
-            Relais Steuerung
-          </h1>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              Relais Steuerung
+            </h1>
+            {refreshing && (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+            )}
+          </div>
           <div className="flex items-center justify-between">
             <p className="text-white/80">
               Steuerung von 16 Relais über door.moritxius.de
             </p>
             <button
-              onClick={fetchStatus}
-              disabled={loading}
-              className="glass-button text-white px-6 py-3 rounded-full transition-all duration-300 flex items-center gap-2 hover:shadow-lg disabled:opacity-50"
+              onClick={() => fetchStatus(true)}
+              className="glass-button text-white px-6 py-3 rounded-full transition-all duration-300 flex items-center gap-2 hover:shadow-lg"
             >
-              {loading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              )}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
               Aktualisieren
             </button>
           </div>
@@ -187,7 +194,6 @@ export default function RelaisPage() {
             relaisNumber={number}
             isOpen={relaisStatus[number.toString()] === 'ON'}
             onToggle={toggleRelais}
-            loading={loading}
           />
         ))}
       </div>
