@@ -3,10 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { UserButton, useUser } from '@clerk/nextjs'
+import { useState } from 'react'
 
 export default function Navbar() {
   const pathname = usePathname()
   const { user } = useUser()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   // Prüfe ob User Zugriff auf Relais hat
   const hasRelaisAccess = user?.publicMetadata?.relais === 1 || user?.publicMetadata?.admin === 1
@@ -30,7 +32,7 @@ export default function Navbar() {
                 }}
               />
               <span 
-                className="text-white text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent hidden"
+                className="text-white text-xl font-bold hidden"
                 style={{ display: 'none' }}
               >
                 Matsuda Béla
@@ -38,7 +40,8 @@ export default function Navbar() {
             </Link>
           </div>
           
-          <div className="flex items-center space-x-4">
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-4">
             <Link 
               href="/" 
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
@@ -100,7 +103,96 @@ export default function Navbar() {
               </div>
             )}
           </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-white/80 hover:text-white p-2 rounded-lg hover:glass-button transition-all duration-300"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-white/10 bg-black/20 backdrop-blur-md">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              <Link 
+                href="/" 
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ${
+                  pathname === '/' 
+                    ? 'glass-button text-white' 
+                    : 'text-white/80 hover:text-white hover:glass-button'
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
+              
+              {user && hasRelaisAccess && (
+                <Link 
+                  href="/relais" 
+                  className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ${
+                    pathname === '/relais' 
+                      ? 'glass-button text-white' 
+                      : 'text-white/80 hover:text-white hover:glass-button'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Relais Steuerung
+                </Link>
+              )}
+
+              <Link 
+                href="/impressum" 
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ${
+                  pathname === '/impressum' 
+                    ? 'glass-button text-white' 
+                    : 'text-white/80 hover:text-white hover:glass-button'
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Impressum
+              </Link>
+              
+              {user ? (
+                <div className="flex items-center space-x-3 px-3 py-2">
+                  <span className="text-white/90 text-sm font-medium">
+                    {user.firstName || user.emailAddresses[0].emailAddress}
+                  </span>
+                  <div className="glass-button rounded-full p-1">
+                    <UserButton afterSignOutUrl="/" />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <Link 
+                    href="/sign-in" 
+                    className="block px-3 py-2 rounded-md text-base font-medium text-white/80 hover:text-white hover:glass-button transition-all duration-300"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Anmelden
+                  </Link>
+                  <Link 
+                    href="/sign-up" 
+                    className="block px-3 py-2 rounded-md text-base font-medium glass-button text-white transition-all duration-300"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Registrieren
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   )
