@@ -39,12 +39,14 @@ export default function GuidePage() {
   // Prüfe ob der User Admin oder Autor ist
   const canEdit = user && guide && (
     user.publicMetadata?.role === 'admin' || 
+    user.publicMetadata?.admin === 1 ||
+    user.publicMetadata?.author === 1 ||
     guide.createdBy === user.id ||
     guide.author === user.fullName
   )
 
   const handleEdit = () => {
-    router.push(`/admin/edit-guide/${guide?.slug}`)
+    router.push(`/admin/simple-edit/${guide?.slug}`)
   }
 
   const handleDelete = async () => {
