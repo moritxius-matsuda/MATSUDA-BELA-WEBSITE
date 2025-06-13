@@ -3,12 +3,26 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { UserButton, useUser } from '@clerk/nextjs'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Navbar() {
   const pathname = usePathname()
   const { user } = useUser()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  useEffect(() => {
+    const theme = localStorage.getItem('theme') || 'light'
+    setIsDarkMode(theme === 'dark')
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [])
+
+  const toggleTheme = () => {
+    const newTheme = isDarkMode ? 'light' : 'dark'
+    localStorage.setItem('theme', newTheme)
+    document.documentElement.setAttribute('data-theme', newTheme)
+    setIsDarkMode(!isDarkMode)
+  }
 
   // Prüfe ob User Zugriff auf Relais hat
   const hasRelaisAccess = user?.publicMetadata?.relais === 1 || user?.publicMetadata?.admin === 1
@@ -48,6 +62,21 @@ export default function Navbar() {
           
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-4">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+              title="Dunkelmodus umschalten"
+            >
+              {isDarkMode ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707" />
+                </svg>
+              )}
+            </button>
             <Link 
               href="/" 
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
