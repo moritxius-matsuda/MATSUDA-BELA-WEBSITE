@@ -88,7 +88,7 @@ export default function Navbar() {
 
             {user && isAdmin && (
               <Link 
-                href="/admin/blob"
+                href="/admin/blobs"
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${pathname === '/admin/blob' ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10'}`}
               >
                 Blob Admin
