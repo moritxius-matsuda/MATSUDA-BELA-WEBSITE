@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { categories, operatingSystems, difficulties } from '@/data/guides'
-import RichTextEditor from '@/components/RichTextEditor'
+import TiptapEditor from '@/components/TiptapEditor'
 
 interface GuideSection {
   id: string
@@ -586,13 +586,11 @@ export default function GuideEditorPage() {
 
                 {/* Content Input */}
                 {section.type === 'text' ? (
-                  <div className="rich-text-editor-dark">
-                    <RichTextEditor
-                      value={section.content}
-                      onChange={(value) => updateSection(section.id, value)}
+                  <div>
+                    <TiptapEditor
+                      content={section.content}
+                      onChange={(content) => updateSection(section.id, content)}
                       placeholder="Schreibe hier deinen Text..."
-                      className="border-white/20 bg-black/30"
-                      darkMode={true}
                     />
                   </div>
                 ) : section.type === 'code' ? (

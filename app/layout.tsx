@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import '../styles/tiptap.css'
 import Navbar from '@/components/Navbar'
 import { ClerkProvider } from '@clerk/nextjs'
 
