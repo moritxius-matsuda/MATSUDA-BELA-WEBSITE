@@ -2,43 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
 import { put, list } from '@vercel/blob'
 
-const BLOB_FILENAME = 'guides.json'
-
-// Lade alle gespeicherten Guides aus Vercel Blob
-async function loadGuides() {
+// Lade alle individuellen Guide-Dateien
+async function loadAllGuides() {
   try {
-    // Liste alle Blobs auf
-    const { blobs } = await list()
-    const guidesBlob = blobs.find(blob => blob.pathname === BLOB_FILENAME)
+    const { blobs } = await list({ prefix: 'guide-' })
+    const guides = []
     
-    if (guidesBlob) {
-      // Lade den Inhalt des Blobs
-      const response = await fetch(guidesBlob.url)
-      if (response.ok) {
-        const data = await response.json()
-        return data.guides || []
+    for (const blob of blobs) {
+      if (blob.pathname.endsWith('.json')) {
+        try {
+          const response = await fetch(blob.url)
+          if (response.ok) {
+            const guide = await response.json()
+            guides.push(guide)
+          }
+        } catch (error) {
+          console.error(`Error loading guide ${blob.pathname}:`, error)
+        }
       }
     }
     
-    return []
+    return guides
   } catch (error) {
-    console.error('Error loading guides from blob:', error)
+    console.error('Error loading guides:', error)
     return []
-  }
-}
-
-// Speichere Guides in Vercel Blob
-async function saveGuides(guides: any[]) {
-  try {
-    const blob = await put(BLOB_FILENAME, JSON.stringify({ guides }, null, 2), {
-      access: 'public',
-      contentType: 'application/json'
-    })
-    
-    return blob
-  } catch (error) {
-    console.error('Error saving guides to blob:', error)
-    return null
   }
 }
 
@@ -63,8 +50,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Lade bestehende Guides
-    const existingGuides = await loadGuides()
+    // Lade bestehende Guides um Slug-Duplikate zu prüfen
+    const existingGuides = await loadAllGuides()
     
     // Erstelle neuen Guide
     const newGuide = {
@@ -89,40 +76,17 @@ export async function POST(request: NextRequest) {
     // Prüfe ob Slug bereits existiert
     const slugExists = existingGuides.some((guide: any) => guide.slug === newGuide.slug)
     if (slugExists) {
-      // Füge Nummer zum Slug hinzu
-      let counter = 1
-      let newSlug = `${newGuide.slug}-${counter}`
-      while (existingGuides.some((guide: any) => guide.slug === newSlug)) {
-        counter++
-        newSlug = `${newGuide.slug}-${counter}`
-      }
-      newGuide.slug = newSlug
-    }
-
-    // Füge neuen Guide hinzu
-    existingGuides.push(newGuide)
-    
-    // Speichere alle Guides
-    const saved = await saveGuides(existingGuides)
-    
-    if (!saved) {
       return NextResponse.json(
-        { error: 'Fehler beim Speichern des Guides' },
-        { status: 500 }
+        { error: 'Ein Guide mit diesem Slug existiert bereits' },
+        { status: 400 }
       )
     }
 
-    // Speichere auch die individuelle Guide-Datei
-    try {
-      const individualGuideBlob = await put(`guide-${newGuide.slug}.json`, JSON.stringify(newGuide, null, 2), {
-        access: 'public',
-        contentType: 'application/json'
-      })
-      console.log('Individual guide file created:', individualGuideBlob.url)
-    } catch (error) {
-      console.error('Error creating individual guide file:', error)
-      // Nicht kritisch, da der Guide in der Hauptliste gespeichert wurde
-    }
+    // Erstelle nur die individuelle Guide-Datei
+    const guideBlob = await put(`guide-${newGuide.slug}.json`, JSON.stringify(newGuide, null, 2), {
+      access: 'public',
+      contentType: 'application/json'
+    })
 
     return NextResponse.json({
       success: true,
@@ -141,7 +105,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const guides = await loadGuides()
+    const guides = await loadAllGuides()
     return NextResponse.json({ guides })
   } catch (error) {
     console.error('API Error:', error)
