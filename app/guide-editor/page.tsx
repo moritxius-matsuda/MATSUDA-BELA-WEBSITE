@@ -157,21 +157,38 @@ export default function GuideEditorPage() {
         sections,
         author: user.fullName || user.firstName || user.emailAddresses[0].emailAddress,
         authorRole: user.publicMetadata?.admin === 1 ? 'Administrator' : 'Author',
-        authorImage: user.imageUrl,
-        publishedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        authorImage: user.imageUrl
       }
 
-      // Hier würde normalerweise ein API-Call stattfinden
-      console.log('Guide Data:', guideData)
+      const response = await fetch('/api/guides', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(guideData)
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Fehler beim Speichern')
+      }
+
+      // Erfolgreich gespeichert
+      alert(`Guide erfolgreich gespeichert!\nSlug: ${result.guide.slug}`)
       
-      // Simuliere Speichern
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Formular zurücksetzen
+      setTitle('')
+      setDescription('')
+      setCategory('Virtualisierung')
+      setSelectedOS([])
+      setDifficulty('Anfänger')
+      setReadTime('')
+      setTags('')
+      setSections([{ id: '1', type: 'text', content: '' }])
       
-      alert('Guide erfolgreich gespeichert! (Demo-Modus)')
-      
-    } catch (err) {
-      setError('Fehler beim Speichern des Guides.')
+    } catch (err: any) {
+      setError(err.message || 'Fehler beim Speichern des Guides.')
       console.error('Save error:', err)
     } finally {
       setSaving(false)

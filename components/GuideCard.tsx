@@ -37,7 +37,7 @@ export default function GuideCard({
   }
 
   return (
-    <Link href={`/${slug}`}>
+    <Link href={`/guide/${slug}`}>
       <div className="glass-card p-6 h-full md:hover:scale-105 transition-all duration-300 cursor-pointer">
         <div className="flex flex-col h-full">
           {/* Header */}

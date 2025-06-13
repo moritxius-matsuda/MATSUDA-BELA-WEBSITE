@@ -1,17 +1,48 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import GuideCard from '@/components/GuideCard'
-import { guides, categories, operatingSystems, difficulties } from '@/data/guides'
+import { guides as staticGuides, categories, operatingSystems, difficulties } from '@/data/guides'
+import type { Guide } from '@/data/guides'
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('Alle')
   const [selectedOS, setSelectedOS] = useState('Alle')
   const [selectedDifficulty, setSelectedDifficulty] = useState('Alle')
+  const [allGuides, setAllGuides] = useState<Guide[]>(staticGuides)
+  const [loading, setLoading] = useState(true)
+
+  // Lade alle Guides (statische + gespeicherte)
+  useEffect(() => {
+    const loadAllGuides = async () => {
+      try {
+        const response = await fetch('/api/guides')
+        if (response.ok) {
+          const result = await response.json()
+          const savedGuides = result.guides || []
+          
+          // Kombiniere statische und gespeicherte Guides
+          const combined = [...staticGuides, ...savedGuides]
+          setAllGuides(combined)
+        } else {
+          // Fallback zu statischen Guides
+          setAllGuides(staticGuides)
+        }
+      } catch (error) {
+        console.error('Error loading guides:', error)
+        // Fallback zu statischen Guides
+        setAllGuides(staticGuides)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadAllGuides()
+  }, [])
 
   const filteredGuides = useMemo(() => {
-    return guides.filter(guide => {
+    return allGuides.filter(guide => {
       const matchesSearch = guide.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            guide.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            guide.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -22,7 +53,7 @@ export default function Home() {
 
       return matchesSearch && matchesCategory && matchesOS && matchesDifficulty
     })
-  }, [searchTerm, selectedCategory, selectedOS, selectedDifficulty])
+  }, [allGuides, searchTerm, selectedCategory, selectedOS, selectedDifficulty])
 
   const clearFilters = () => {
     setSearchTerm('')
