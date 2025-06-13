@@ -233,3 +233,11 @@
   color: #93c5fd !important;
   font-family: 'Courier New', monospace !important;
 }
+
+/* Placeholder für leere Pfad-Blöcke */
+.ProseMirror div[data-type="path"]:empty::before {
+  content: "Pfad eingeben...";
+  color: rgba(147, 197, 253, 0.5);
+  pointer-events: none;
+  font-style: italic;
+}

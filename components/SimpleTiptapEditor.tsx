@@ -71,24 +71,16 @@ export default function SimpleTiptapEditor({ content, onChange, placeholder = 'S
   }, [editor])
 
   const addPath = useCallback(() => {
-    // Füge einen editierbaren Pfad-Block direkt als HTML ein
-    const pathHtml = `<div data-type="path" contenteditable="true" style="background-color: rgba(59, 130, 246, 0.1); border: 2px solid rgba(59, 130, 246, 0.5); border-radius: 0.5rem; padding: 0.75rem; font-family: monospace; color: #93c5fd; margin: 0.5rem 0; font-size: 0.875rem; outline: none; min-height: 1.5rem;" onclick="if(this.textContent.trim() === 'Pfad hier eingeben...') { this.textContent = ''; }">Pfad hier eingeben...</div><p></p>`
+    // Füge einen leeren editierbaren Pfad-Block ein, genau wie Code-Block
+    const pathHtml = `<div data-type="path" contenteditable="true" style="background-color: rgba(59, 130, 246, 0.1); border: 2px solid rgba(59, 130, 246, 0.5); border-radius: 0.5rem; padding: 0.75rem; font-family: monospace; color: #93c5fd; margin: 0.5rem 0; font-size: 0.875rem; outline: none; min-height: 1.5rem;"></div><p></p>`
     editor?.chain().focus().insertContent(pathHtml).run()
     
-    // Fokussiere den neuen Pfad-Block nach kurzer Verzögerung
+    // Fokussiere den neuen Pfad-Block
     setTimeout(() => {
       const pathBlocks = document.querySelectorAll('[data-type="path"]')
       const lastPathBlock = pathBlocks[pathBlocks.length - 1] as HTMLElement
       if (lastPathBlock) {
         lastPathBlock.focus()
-        // Wähle den Placeholder-Text aus
-        if (lastPathBlock.textContent === 'Pfad hier eingeben...') {
-          const range = document.createRange()
-          range.selectNodeContents(lastPathBlock)
-          const selection = window.getSelection()
-          selection?.removeAllRanges()
-          selection?.addRange(range)
-        }
       }
     }, 100)
   }, [editor])
