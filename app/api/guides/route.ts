@@ -112,6 +112,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Speichere auch die individuelle Guide-Datei
+    try {
+      const individualGuideBlob = await put(`guide-${newGuide.slug}.json`, JSON.stringify(newGuide, null, 2), {
+        access: 'public',
+        contentType: 'application/json'
+      })
+      console.log('Individual guide file created:', individualGuideBlob.url)
+    } catch (error) {
+      console.error('Error creating individual guide file:', error)
+      // Nicht kritisch, da der Guide in der Hauptliste gespeichert wurde
+    }
+
     return NextResponse.json({
       success: true,
       guide: newGuide,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
-import { put, list } from '@vercel/blob'
+import { put, list, del } from '@vercel/blob'
 
 const BLOB_FILENAME = 'guides.json'
 
@@ -193,6 +193,18 @@ export async function PUT(
       )
     }
 
+    // Speichere auch die individuelle Guide-Datei
+    try {
+      const individualGuideBlob = await put(`guide-${updatedGuide.slug}.json`, JSON.stringify(updatedGuide, null, 2), {
+        access: 'public',
+        contentType: 'application/json'
+      })
+      console.log('Individual guide file updated:', individualGuideBlob.url)
+    } catch (error) {
+      console.error('Error updating individual guide file:', error)
+      // Nicht kritisch, da der Guide in der Hauptliste gespeichert wurde
+    }
+
     return NextResponse.json({
       success: true,
       guide: updatedGuide,
@@ -254,6 +266,20 @@ export async function DELETE(
         { error: 'Fehler beim Löschen des Guides' },
         { status: 500 }
       )
+    }
+
+    // Lösche auch die individuelle Guide-Datei
+    try {
+      // Finde die individuelle Guide-Datei
+      const { blobs } = await list({ prefix: `guide-${existingGuide.slug}.json` })
+      
+      if (blobs.length > 0) {
+        await del(blobs[0].url)
+        console.log('Individual guide file deleted:', blobs[0].url)
+      }
+    } catch (error) {
+      console.error('Error deleting individual guide file:', error)
+      // Nicht kritisch, da der Guide aus der Hauptliste entfernt wurde
     }
 
     return NextResponse.json({
