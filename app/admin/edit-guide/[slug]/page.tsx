@@ -134,17 +134,25 @@ function RichTextEditor({ value, onChange, placeholder }: {
         </button>
       </div>
       
-      {/* Editor */}
-      <div
-        contentEditable
-        onInput={handleInput}
-        onFocus={() => setIsEditing(true)}
-        onBlur={() => setIsEditing(false)}
-        dangerouslySetInnerHTML={{ __html: value }}
-        className="p-3 min-h-[200px] focus:outline-none"
-        style={{ whiteSpace: 'pre-wrap' }}
-        placeholder={placeholder}
-      />
+      {/* Editor Container */}
+      <div className="relative">
+        <div
+          contentEditable
+          onInput={handleInput}
+          onFocus={() => setIsEditing(true)}
+          onBlur={() => setIsEditing(false)}
+          dangerouslySetInnerHTML={{ __html: value }}
+          className="p-3 min-h-[200px] focus:outline-none"
+          style={{ whiteSpace: 'pre-wrap' }}
+        />
+        
+        {/* Placeholder */}
+        {!value && placeholder && (
+          <div className="absolute top-3 left-3 text-gray-400 pointer-events-none">
+            {placeholder}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -359,6 +367,159 @@ export default function EditGuidePage() {
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+
+            {/* Betriebssysteme und weitere Optionen */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Betriebssysteme
+                </label>
+                <div className="space-y-2">
+                  {['Windows', 'Linux', 'macOS', 'Ubuntu', 'Debian', 'CentOS', 'RHEL', 'Arch Linux', 'FreeBSD'].map((os) => (
+                    <label key={os} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.operatingSystem.includes(os)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData(prev => ({
+                              ...prev,
+                              operatingSystem: [...prev.operatingSystem, os]
+                            }))
+                          } else {
+                            setFormData(prev => ({
+                              ...prev,
+                              operatingSystem: prev.operatingSystem.filter(item => item !== os)
+                            }))
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{os}</span>
+                    </label>
+                  ))}
+                  <div className="mt-2">
+                    <input
+                      type="text"
+                      placeholder="Eigenes Betriebssystem hinzufügen..."
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          const newOS = e.currentTarget.value.trim()
+                          if (!formData.operatingSystem.includes(newOS)) {
+                            setFormData(prev => ({
+                              ...prev,
+                              operatingSystem: [...prev.operatingSystem, newOS]
+                            }))
+                          }
+                          e.currentTarget.value = ''
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    />
+                  </div>
+                  {/* Ausgewählte Betriebssysteme anzeigen */}
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {formData.operatingSystem.map((os) => (
+                      <span
+                        key={os}
+                        className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded"
+                      >
+                        {os}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              operatingSystem: prev.operatingSystem.filter(item => item !== os)
+                            }))
+                          }}
+                          className="ml-1 text-blue-600 hover:text-blue-800"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Schwierigkeit
+                </label>
+                <select
+                  value={formData.difficulty}
+                  onChange={(e) => setFormData(prev => ({ ...prev, difficulty: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Schwierigkeit wählen</option>
+                  <option value="Einfach">Einfach</option>
+                  <option value="Mittel">Mittel</option>
+                  <option value="Schwer">Schwer</option>
+                  <option value="Experte">Experte</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Lesezeit
+                </label>
+                <input
+                  type="text"
+                  value={formData.readTime}
+                  onChange={(e) => setFormData(prev => ({ ...prev, readTime: e.target.value }))}
+                  placeholder="z.B. 30 Minuten"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tags (mit Enter hinzufügen)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Tag eingeben und Enter drücken..."
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                      const newTag = e.currentTarget.value.trim()
+                      if (!formData.tags.includes(newTag)) {
+                        setFormData(prev => ({
+                          ...prev,
+                          tags: [...prev.tags, newTag]
+                        }))
+                      }
+                      e.currentTarget.value = ''
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {formData.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+                    >
+                      #{tag}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            tags: prev.tags.filter(item => item !== tag)
+                          }))
+                        }}
+                        className="ml-1 text-gray-500 hover:text-gray-700"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Sections */}

@@ -364,7 +364,7 @@ export default function GuideEditorPage() {
               <label className="block text-white/80 text-sm font-medium mb-3">
                 Unterstützte Betriebssysteme
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                 {operatingSystems.filter(os => os !== 'Alle').map(os => (
                   <label key={os} className="flex items-center cursor-pointer">
                     <input
@@ -383,6 +383,47 @@ export default function GuideEditorPage() {
                   </label>
                 ))}
               </div>
+              
+              {/* Eigenes Betriebssystem hinzufügen */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Eigenes Betriebssystem hinzufügen..."
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                      const newOS = e.currentTarget.value.trim()
+                      if (!selectedOS.includes(newOS)) {
+                        setSelectedOS(prev => [...prev, newOS])
+                      }
+                      e.currentTarget.value = ''
+                    }
+                  }}
+                  className="flex-1 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                />
+              </div>
+              
+              {/* Ausgewählte Betriebssysteme anzeigen */}
+              {selectedOS.length > 0 && (
+                <div className="mt-3">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedOS.map((os) => (
+                      <span
+                        key={os}
+                        className="inline-flex items-center px-2 py-1 bg-purple-500/20 border border-purple-400/50 text-purple-300 text-xs rounded"
+                      >
+                        {os}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedOS(prev => prev.filter(item => item !== os))}
+                          className="ml-1 text-purple-300 hover:text-purple-100"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
