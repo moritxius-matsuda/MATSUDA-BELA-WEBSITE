@@ -43,16 +43,32 @@ async function saveGuides(guides: any[]) {
 }
 
 // Prüfe ob der Benutzer berechtigt ist, den Guide zu bearbeiten
-function canEditGuide(guide: any, userId: string): boolean {
-  // Admin-Check (hier können Sie spezifische Admin-User-IDs hinzufügen)
-  const adminUserIds: string[] = [
-    // Fügen Sie hier Admin-User-IDs hinzu
-    // 'user_admin_id_1',
-    // 'user_admin_id_2'
-  ]
-  
-  // Benutzer ist Admin oder Autor des Guides
-  return adminUserIds.includes(userId) || guide.createdBy === userId
+async function canEditGuide(guide: any, userId: string): Promise<boolean> {
+  try {
+    // Hole Benutzerinformationen von Clerk
+    const { clerkClient } = await import('@clerk/nextjs/server')
+    const user = await clerkClient.users.getUser(userId)
+    
+    // Admin-Check über Clerk Metadaten
+    const isAdmin = user.publicMetadata?.admin === 1
+    const isAuthor = user.publicMetadata?.author === 1
+    const isCreator = guide.createdBy === userId
+    
+    console.log('Edit permission check:', {
+      userId,
+      guideCreatedBy: guide.createdBy,
+      isAdmin,
+      isAuthor,
+      isCreator,
+      canEdit: isAdmin || (isAuthor && isCreator)
+    })
+    
+    // Admin kann alles bearbeiten, Author kann nur eigene Guides bearbeiten
+    return isAdmin || (isAuthor && isCreator)
+  } catch (error) {
+    console.error('Error checking edit permissions:', error)
+    return false
+  }
 }
 
 export async function GET(
@@ -72,7 +88,7 @@ export async function GET(
 
     // Füge Bearbeitungsberechtigung hinzu
     const { userId } = auth()
-    const canEdit = userId ? canEditGuide(guide, userId) : false
+    const canEdit = userId ? await canEditGuide(guide, userId) : false
 
     return NextResponse.json({ 
       guide: {
@@ -117,7 +133,7 @@ export async function PUT(
     const existingGuide = guides[guideIndex]
     
     // Prüfe Berechtigung
-    if (!canEditGuide(existingGuide, userId)) {
+    if (!(await canEditGuide(existingGuide, userId))) {
       return NextResponse.json(
         { error: 'Keine Berechtigung zum Bearbeiten dieses Guides' },
         { status: 403 }
@@ -220,7 +236,7 @@ export async function DELETE(
     const existingGuide = guides[guideIndex]
     
     // Prüfe Berechtigung
-    if (!canEditGuide(existingGuide, userId)) {
+    if (!(await canEditGuide(existingGuide, userId))) {
       return NextResponse.json(
         { error: 'Keine Berechtigung zum Löschen dieses Guides' },
         { status: 403 }
