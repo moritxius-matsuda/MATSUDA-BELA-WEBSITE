@@ -205,7 +205,9 @@
   font-size: 0.875rem !important;
   display: block !important;
   outline: none !important;
-  min-height: 1.5rem;
+  min-height: 1.5rem !important;
+  cursor: text !important;
+  white-space: pre-wrap !important;
 }
 
 .ProseMirror div[data-type="path"]:hover {
@@ -219,10 +221,15 @@
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
 }
 
-/* Placeholder text für leere Pfad-Blöcke */
-.ProseMirror div[data-type="path"]:empty::before {
-  content: "Pfad hier eingeben... (z.B. /etc/network/interfaces)";
-  color: rgba(147, 197, 253, 0.6);
-  pointer-events: none;
-  font-style: italic;
+/* Bessere Sichtbarkeit für Pfad-Blöcke */
+.ProseMirror div[data-type="path"]:focus-within {
+  border-color: rgba(59, 130, 246, 0.8) !important;
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Stelle sicher, dass Text in Pfad-Blöcken sichtbar ist */
+.ProseMirror div[data-type="path"] * {
+  color: #93c5fd !important;
+  font-family: 'Courier New', monospace !important;
 }

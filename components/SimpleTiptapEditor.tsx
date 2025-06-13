@@ -6,40 +6,7 @@ import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
 import TextStyle from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
-import { Node } from '@tiptap/core'
 import { useCallback } from 'react'
-
-// Einfache Pfad-Extension
-const PathBlock = Node.create({
-  name: 'pathBlock',
-  group: 'block',
-  content: 'text*',
-  
-  parseHTML() {
-    return [
-      {
-        tag: 'div[data-type="path"]',
-      },
-    ]
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    return ['div', {
-      ...HTMLAttributes,
-      'data-type': 'path',
-      class: 'path-block',
-      style: 'background-color: rgba(59, 130, 246, 0.1); border: 2px solid rgba(59, 130, 246, 0.5); border-radius: 0.5rem; padding: 0.75rem; font-family: monospace; color: #93c5fd; margin: 0.5rem 0; font-size: 0.875rem;'
-    }, 0]
-  },
-
-  addCommands() {
-    return {
-      setPathBlock: () => ({ commands }) => {
-        return commands.setNode(this.name)
-      },
-    }
-  },
-})
 
 interface SimpleTiptapEditorProps {
   content: string
@@ -64,7 +31,6 @@ export default function SimpleTiptapEditor({ content, onChange, placeholder = 'S
       }),
       TextStyle,
       Color,
-      PathBlock,
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -105,7 +71,26 @@ export default function SimpleTiptapEditor({ content, onChange, placeholder = 'S
   }, [editor])
 
   const addPath = useCallback(() => {
-    editor?.chain().focus().setPathBlock().run()
+    // Füge einen editierbaren Pfad-Block direkt als HTML ein
+    const pathHtml = `<div data-type="path" contenteditable="true" style="background-color: rgba(59, 130, 246, 0.1); border: 2px solid rgba(59, 130, 246, 0.5); border-radius: 0.5rem; padding: 0.75rem; font-family: monospace; color: #93c5fd; margin: 0.5rem 0; font-size: 0.875rem; outline: none; min-height: 1.5rem;" onclick="if(this.textContent.trim() === 'Pfad hier eingeben...') { this.textContent = ''; }">Pfad hier eingeben...</div><p></p>`
+    editor?.chain().focus().insertContent(pathHtml).run()
+    
+    // Fokussiere den neuen Pfad-Block nach kurzer Verzögerung
+    setTimeout(() => {
+      const pathBlocks = document.querySelectorAll('[data-type="path"]')
+      const lastPathBlock = pathBlocks[pathBlocks.length - 1] as HTMLElement
+      if (lastPathBlock) {
+        lastPathBlock.focus()
+        // Wähle den Placeholder-Text aus
+        if (lastPathBlock.textContent === 'Pfad hier eingeben...') {
+          const range = document.createRange()
+          range.selectNodeContents(lastPathBlock)
+          const selection = window.getSelection()
+          selection?.removeAllRanges()
+          selection?.addRange(range)
+        }
+      }
+    }, 100)
   }, [editor])
 
   const addCodeBlock = useCallback(() => {
@@ -236,9 +221,7 @@ export default function SimpleTiptapEditor({ content, onChange, placeholder = 'S
             </button>
             <button
               onClick={addPath}
-              className={`p-2 rounded text-sm font-mono ${
-                editor.isActive('pathBlock') ? 'bg-blue-500 text-white' : 'text-white/70 hover:bg-white/10'
-              }`}
+              className="p-2 rounded text-sm font-mono text-white/70 hover:bg-white/10"
               title="Pfad"
             >
               📁
