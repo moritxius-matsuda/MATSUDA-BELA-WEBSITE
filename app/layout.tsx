@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="de">
-        <body className={`${inter.className} dark:bg-black`} data-theme="light">
+        <body className={`${inter.className}`} data-theme="light">
           <div className="liquid-bg">
             <div className="liquid-shape"></div>
             <div className="liquid-shape"></div>
