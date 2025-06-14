@@ -21,6 +21,28 @@ export const metadata: Metadata = {
     ],
   },
   manifest: '/site.webmanifest',
+  metadataBase: new URL('https://moritxius.de'),
+  openGraph: {
+    type: 'website',
+    locale: 'de_DE',
+    url: 'https://moritxius.de',
+    title: 'Matsuda Béla Guides',
+    description: 'Entdecke umfassende Anleitungen für Server-Administration, Virtualisierung und mehr',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Matsuda Béla Guides',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Matsuda Béla Guides',
+    description: 'Entdecke umfassende Anleitungen für Server-Administration, Virtualisierung und mehr',
+    images: ['/og-image.jpg'],
+  },
 }
 
 export default function RootLayout({
