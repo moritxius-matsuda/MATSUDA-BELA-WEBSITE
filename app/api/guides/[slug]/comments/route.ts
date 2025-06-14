@@ -17,10 +17,13 @@ export async function GET(
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
 
+    // Verwende userId oder eine Session-ID für anonyme Benutzer
+    const userKey = userId || `anonymous_${request.ip || request.headers.get('x-forwarded-for') || 'unknown'}`
+    
     // Füge userReaction für jeden Kommentar hinzu
     const commentsWithUserReaction = sortedComments.map(comment => ({
       ...comment,
-      userReaction: userId ? (comment.userReactions[userId] || null) : null
+      userReaction: comment.userReactions?.[userKey] || null
     }))
 
     return NextResponse.json({

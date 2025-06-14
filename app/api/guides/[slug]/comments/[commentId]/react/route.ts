@@ -30,8 +30,16 @@ export async function POST(
       )
     }
 
+    // Verwende userId oder eine Session-ID für anonyme Benutzer
+    const userKey = userId || `anonymous_${request.ip || request.headers.get('x-forwarded-for') || 'unknown'}`
+    
+    // Stelle sicher, dass userReactions existiert
+    if (!comment.userReactions) {
+      comment.userReactions = {}
+    }
+    
     // Aktuelle Reaktion des Benutzers
-    const currentReaction = comment.userReactions[userId]
+    const currentReaction = comment.userReactions[userKey]
     let newLikes = comment.likes
     let newDislikes = comment.dislikes
     const newUserReactions = { ...comment.userReactions }
@@ -46,13 +54,13 @@ export async function POST(
     // Füge neue Reaktion hinzu (außer bei 'remove')
     if (reaction === 'like' && currentReaction !== 'like') {
       newLikes += 1
-      newUserReactions[userId] = 'like'
+      newUserReactions[userKey] = 'like'
     } else if (reaction === 'dislike' && currentReaction !== 'dislike') {
       newDislikes += 1
-      newUserReactions[userId] = 'dislike'
+      newUserReactions[userKey] = 'dislike'
     } else {
       // Reaktion entfernen
-      delete newUserReactions[userId]
+      delete newUserReactions[userKey]
     }
 
     // Kommentar aktualisieren
@@ -68,7 +76,7 @@ export async function POST(
         id: commentId,
         likes: newLikes,
         dislikes: newDislikes,
-        userReaction: newUserReactions[userId] || null
+        userReaction: newUserReactions[userKey] || null
       },
       message: 'Reaktion aktualisiert'
     })
