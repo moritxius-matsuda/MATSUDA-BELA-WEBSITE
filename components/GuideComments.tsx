@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useUser } from '@clerk/nextjs'
 
 interface GuideCommentsProps {
@@ -69,10 +69,14 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
     setReplyContent('')
   }
 
-  const cancelReply = () => {
+  const cancelReply = useCallback(() => {
     setReplyingTo(null)
     setReplyContent('')
-  }
+  }, [])
+
+  const handleReplyContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setReplyContent(e.target.value)
+  }, [])
 
   const submitReply = async (parentId: string) => {
     if (!isSignedIn) {
@@ -328,7 +332,7 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
   }
 
   // Kommentar-Komponente (rekursiv für Antworten)
-  const CommentItem = ({ comment, isReply = false }: { comment: Comment, isReply?: boolean }) => (
+  const CommentItem = useCallback(({ comment, isReply = false }: { comment: Comment, isReply?: boolean }) => (
     <div className={`${isReply ? 'ml-8 border-l-2 border-white/10 pl-4' : ''}`}>
       <div className="p-4 bg-white/5 rounded-lg border border-white/10">
         <div className="flex items-start gap-3">
@@ -510,13 +514,15 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
                   )}
                   <div className="flex-1">
                     <textarea
+                      key={`reply-${comment.id}`}
                       value={replyContent}
-                      onChange={(e) => setReplyContent(e.target.value)}
+                      onChange={handleReplyContentChange}
                       placeholder={`Antworten Sie ${comment.userName}...`}
                       className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-blue-400/50 focus:bg-white/15 resize-none text-sm"
                       rows={2}
                       maxLength={1000}
                       disabled={submitting}
+                      autoFocus
                     />
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-xs text-white/60">
@@ -556,7 +562,7 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
         </div>
       )}
     </div>
-  )
+  ), [replyingTo, replyContent, submitting, user, isSignedIn, expandedComments, editingComment, editContent, cancelReply, handleReplyContentChange])
 
   // Zeitformat
   const formatDate = (dateString: string) => {
