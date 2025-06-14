@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
-import { getComments, addComment, type Comment } from '@/lib/storage'
+import { getComments, addComment, getComment, type Comment } from '@/lib/storage'
 
 // GET - Kommentare für einen Guide abrufen
 export async function GET(
