@@ -8,6 +8,7 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
+    const { userId } = auth()
     const slug = params.slug
     const guideComments = getComments(slug)
     
@@ -16,10 +17,16 @@ export async function GET(
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
 
+    // Füge userReaction für jeden Kommentar hinzu
+    const commentsWithUserReaction = sortedComments.map(comment => ({
+      ...comment,
+      userReaction: userId ? (comment.userReactions[userId] || null) : null
+    }))
+
     return NextResponse.json({
       success: true,
-      comments: sortedComments,
-      count: sortedComments.length
+      comments: commentsWithUserReaction,
+      count: commentsWithUserReaction.length
     })
   } catch (error) {
     console.error('Error fetching comments:', error)

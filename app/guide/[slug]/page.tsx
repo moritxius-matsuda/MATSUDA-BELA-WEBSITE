@@ -189,6 +189,9 @@ export default function DynamicGuidePage() {
               <p className="text-white/80 text-lg mb-6">
                 {guide.description}
               </p>
+
+              {/* Inline Bewertungssystem */}
+              <GuideRating guideSlug={slug} inline={true} />
             </div>
 
             {/* Bearbeitungs- und Löschbuttons */}
@@ -347,8 +350,7 @@ export default function DynamicGuidePage() {
           </div>
         </div>
 
-        {/* Bewertungs- und Kommentarsystem */}
-        <GuideRating guideSlug={slug} />
+        {/* Kommentarsystem */}
         <GuideComments guideSlug={slug} />
       </div>
     </div>

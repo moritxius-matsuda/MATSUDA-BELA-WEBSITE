@@ -28,6 +28,9 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
   const [submitting, setSubmitting] = useState(false)
   const [newComment, setNewComment] = useState('')
   const [showCommentForm, setShowCommentForm] = useState(false)
+  const [editingComment, setEditingComment] = useState<string | null>(null)
+  const [editContent, setEditContent] = useState('')
+  const [deletingComment, setDeletingComment] = useState<string | null>(null)
 
   // Kommentare laden
   useEffect(() => {
@@ -94,6 +97,84 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
       alert('Fehler beim Erstellen des Kommentars')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  // Kommentar bearbeiten starten
+  const startEditComment = (comment: Comment) => {
+    setEditingComment(comment.id)
+    setEditContent(comment.content)
+  }
+
+  // Kommentar bearbeiten abbrechen
+  const cancelEditComment = () => {
+    setEditingComment(null)
+    setEditContent('')
+  }
+
+  // Kommentar bearbeiten speichern
+  const saveEditComment = async (commentId: string) => {
+    if (!editContent.trim()) {
+      alert('Kommentar darf nicht leer sein.')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/guides/${guideSlug}/comments/${commentId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: editContent }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          // Kommentar in der Liste aktualisieren
+          setComments(comments.map(c => 
+            c.id === commentId ? data.comment : c
+          ))
+          setEditingComment(null)
+          setEditContent('')
+        }
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Fehler beim Bearbeiten des Kommentars')
+      }
+    } catch (error) {
+      console.error('Error editing comment:', error)
+      alert('Fehler beim Bearbeiten des Kommentars')
+    }
+  }
+
+  // Kommentar löschen
+  const deleteComment = async (commentId: string) => {
+    if (!confirm('Sind Sie sicher, dass Sie diesen Kommentar löschen möchten?')) {
+      return
+    }
+
+    setDeletingComment(commentId)
+    try {
+      const response = await fetch(`/api/guides/${guideSlug}/comments/${commentId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          // Kommentar aus der Liste entfernen
+          setComments(comments.filter(c => c.id !== commentId))
+        }
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Fehler beim Löschen des Kommentars')
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error)
+      alert('Fehler beim Löschen des Kommentars')
+    } finally {
+      setDeletingComment(null)
     }
   }
 
@@ -297,14 +378,83 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
 
                 <div className="flex-1">
                   {/* User Info */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-medium text-white">{comment.userName}</span>
-                    <span className="text-xs text-white/60">•</span>
-                    <span className="text-xs text-white/60">{formatDate(comment.createdAt)}</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-white">{comment.userName}</span>
+                      <span className="text-xs text-white/60">•</span>
+                      <span className="text-xs text-white/60">{formatDate(comment.createdAt)}</span>
+                      {comment.updatedAt !== comment.createdAt && (
+                        <>
+                          <span className="text-xs text-white/60">•</span>
+                          <span className="text-xs text-white/50 italic">bearbeitet</span>
+                        </>
+                      )}
+                    </div>
+                    
+                    {/* Edit/Delete Buttons für eigene Kommentare */}
+                    {user && comment.userId === user.id && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => startEditComment(comment)}
+                          className="text-white/60 hover:text-white text-xs transition-colors duration-300"
+                          title="Bearbeiten"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => deleteComment(comment.id)}
+                          disabled={deletingComment === comment.id}
+                          className="text-white/60 hover:text-red-400 text-xs transition-colors duration-300 disabled:opacity-50"
+                          title="Löschen"
+                        >
+                          {deletingComment === comment.id ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400"></div>
+                          ) : (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Comment Content */}
-                  <p className="text-white/90 mb-3 whitespace-pre-wrap">{comment.content}</p>
+                  {/* Comment Content - Bearbeitung oder Anzeige */}
+                  {editingComment === comment.id ? (
+                    <div className="mb-3">
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-blue-400/50 focus:bg-white/15 resize-none"
+                        rows={3}
+                        maxLength={1000}
+                      />
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-xs text-white/60">
+                          {editContent.length}/1000 Zeichen
+                        </span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={cancelEditComment}
+                            className="px-3 py-1 text-sm text-white/70 hover:text-white transition-colors duration-300"
+                          >
+                            Abbrechen
+                          </button>
+                          <button
+                            onClick={() => saveEditComment(comment.id)}
+                            disabled={!editContent.trim()}
+                            className="px-4 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white text-sm rounded-lg transition-colors duration-300"
+                          >
+                            Speichern
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-white/90 mb-3 whitespace-pre-wrap">{comment.content}</p>
+                  )}
 
                   {/* Comment Actions */}
                   <div className="flex items-center gap-4">

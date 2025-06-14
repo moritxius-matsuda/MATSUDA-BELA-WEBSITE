@@ -5,6 +5,7 @@ import { useUser } from '@clerk/nextjs'
 
 interface GuideRatingProps {
   guideSlug: string
+  inline?: boolean
 }
 
 interface Rating {
@@ -14,7 +15,7 @@ interface Rating {
   ratio: number
 }
 
-export default function GuideRating({ guideSlug }: GuideRatingProps) {
+export default function GuideRating({ guideSlug, inline = false }: GuideRatingProps) {
   const { user, isSignedIn } = useUser()
   const [rating, setRating] = useState<Rating>({
     totalLikes: 0,
@@ -85,7 +86,7 @@ export default function GuideRating({ guideSlug }: GuideRatingProps) {
 
   if (loading) {
     return (
-      <div className="glass-card p-6 mb-8">
+      <div className={inline ? "mb-4" : "glass-card p-6 mb-8"}>
         <div className="animate-pulse">
           <div className="h-4 bg-white/20 rounded w-32 mb-4"></div>
           <div className="flex gap-4">
@@ -98,19 +99,29 @@ export default function GuideRating({ guideSlug }: GuideRatingProps) {
   }
 
   return (
-    <div className="glass-card p-6 mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white">
-          War dieser Guide hilfreich?
-        </h3>
-        {rating.totalLikes + rating.totalDislikes > 0 && (
-          <div className="text-sm text-white/70">
-            {rating.ratio}% fanden es hilfreich ({rating.totalLikes + rating.totalDislikes} Bewertungen)
-          </div>
-        )}
-      </div>
+    <div className={inline ? "mb-4" : "glass-card p-6 mb-8"}>
+      {!inline && (
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">
+            War dieser Guide hilfreich?
+          </h3>
+          {rating.totalLikes + rating.totalDislikes > 0 && (
+            <div className="text-sm text-white/70">
+              {rating.ratio}% fanden es hilfreich ({rating.totalLikes + rating.totalDislikes} Bewertungen)
+            </div>
+          )}
+        </div>
+      )}
 
-      <div className="flex items-center gap-4">
+      {inline && rating.totalLikes + rating.totalDislikes > 0 && (
+        <div className="mb-3">
+          <div className="text-sm text-white/70">
+            {rating.ratio}% fanden diesen Guide hilfreich ({rating.totalLikes + rating.totalDislikes} Bewertungen)
+          </div>
+        </div>
+      )}
+
+      <div className={`flex items-center gap-4 ${inline ? 'flex-wrap' : ''}`}>
         {/* Like Button */}
         <button
           onClick={() => handleReaction('like')}
@@ -121,14 +132,14 @@ export default function GuideRating({ guideSlug }: GuideRatingProps) {
               : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/20'
           } ${submitting ? 'opacity-50 cursor-not-allowed' : ''} ${
             !isSignedIn ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
+          } ${inline ? 'text-sm' : ''}`}
           title={!isSignedIn ? 'Anmelden zum Bewerten' : 'Hilfreich'}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L9 7v13m-3-4l-2-2m0 0l-2-2m2 2v6" />
           </svg>
           <span className="font-medium">{rating.totalLikes}</span>
-          <span className="text-sm">Hilfreich</span>
+          {!inline && <span className="text-sm">Hilfreich</span>}
         </button>
 
         {/* Dislike Button */}
@@ -141,14 +152,14 @@ export default function GuideRating({ guideSlug }: GuideRatingProps) {
               : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/20'
           } ${submitting ? 'opacity-50 cursor-not-allowed' : ''} ${
             !isSignedIn ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
+          } ${inline ? 'text-sm' : ''}`}
           title={!isSignedIn ? 'Anmelden zum Bewerten' : 'Nicht hilfreich'}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v2a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L15 17V4m-3 4l2 2m0 0l2 2m-2-2v6" />
           </svg>
           <span className="font-medium">{rating.totalDislikes}</span>
-          <span className="text-sm">Nicht hilfreich</span>
+          {!inline && <span className="text-sm">Nicht hilfreich</span>}
         </button>
       </div>
 
