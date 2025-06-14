@@ -13,6 +13,9 @@ export interface Comment {
   likes: number
   dislikes: number
   userReactions: { [userId: string]: 'like' | 'dislike' }
+  parentId?: string // Für Antworten auf andere Kommentare
+  replies?: Comment[] // Verschachtelte Antworten
+  replyCount: number // Anzahl der Antworten
 }
 
 export interface GuideRating {
@@ -30,7 +33,20 @@ export const ratingsStorage: { [guideSlug: string]: GuideRating } = {}
 
 // Hilfsfunktionen
 export const getComments = (guideSlug: string): Comment[] => {
-  return commentsStorage[guideSlug] || []
+  const allComments = commentsStorage[guideSlug] || []
+  
+  // Organisiere Kommentare in einer Hierarchie
+  const topLevelComments = allComments.filter(c => !c.parentId)
+  const replies = allComments.filter(c => c.parentId)
+  
+  // Füge Antworten zu ihren Eltern-Kommentaren hinzu
+  topLevelComments.forEach(comment => {
+    comment.replies = replies.filter(r => r.parentId === comment.id)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    comment.replyCount = comment.replies.length
+  })
+  
+  return topLevelComments
 }
 
 export const addComment = (guideSlug: string, comment: Comment): void => {
@@ -43,6 +59,10 @@ export const addComment = (guideSlug: string, comment: Comment): void => {
 export const getComment = (guideSlug: string, commentId: string): Comment | undefined => {
   const comments = commentsStorage[guideSlug] || []
   return comments.find(c => c.id === commentId)
+}
+
+export const getAllComments = (guideSlug: string): Comment[] => {
+  return commentsStorage[guideSlug] || []
 }
 
 export const updateComment = (guideSlug: string, commentId: string, updates: Partial<Comment>): boolean => {

@@ -54,7 +54,7 @@ export async function POST(
 
     const slug = params.slug
     const body = await request.json()
-    const { content, userName, userImage } = body
+    const { content, userName, userImage, parentId } = body
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json(
@@ -70,6 +70,17 @@ export async function POST(
       )
     }
 
+    // Überprüfe ob parentId existiert (falls es eine Antwort ist)
+    if (parentId) {
+      const parentComment = getComment(slug, parentId)
+      if (!parentComment) {
+        return NextResponse.json(
+          { success: false, error: 'Eltern-Kommentar nicht gefunden' },
+          { status: 404 }
+        )
+      }
+    }
+
     const newComment: Comment = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       guideSlug: slug,
@@ -81,7 +92,10 @@ export async function POST(
       updatedAt: new Date().toISOString(),
       likes: 0,
       dislikes: 0,
-      userReactions: {}
+      userReactions: {},
+      parentId: parentId || undefined,
+      replies: [],
+      replyCount: 0
     }
 
     // Kommentar zur Liste hinzufügen
