@@ -9,13 +9,6 @@ export async function POST(
 ) {
   try {
     const { userId } = auth()
-    
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Authentifizierung erforderlich' },
-        { status: 401 }
-      )
-    }
 
     const { slug, commentId } = params
     const body = await request.json()
