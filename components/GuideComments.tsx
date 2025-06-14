@@ -1,11 +1,15 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import { useUser } from '@clerk/nextjs'
 
 interface GuideCommentsProps {
   guideSlug: string
 }
+
+
+
+
 
 interface Comment {
   id: string
@@ -36,6 +40,7 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
   const [deletingComment, setDeletingComment] = useState<string | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState('')
+  const replyTextareaRef = useRef<HTMLTextAreaElement>(null)
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
 
   // Kommentare laden
@@ -332,7 +337,7 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
   }
 
   // Kommentar-Komponente (rekursiv für Antworten)
-  const CommentItem = useCallback(({ comment, isReply = false }: { comment: Comment, isReply?: boolean }) => (
+  const CommentItem = ({ comment, isReply = false }: { comment: Comment, isReply?: boolean }) => (
     <div className={`${isReply ? 'ml-8 border-l-2 border-white/10 pl-4' : ''}`}>
       <div className="p-4 bg-white/5 rounded-lg border border-white/10">
         <div className="flex items-start gap-3">
@@ -514,7 +519,7 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
                   )}
                   <div className="flex-1">
                     <textarea
-                      key={`reply-${comment.id}`}
+                      ref={replyTextareaRef}
                       value={replyContent}
                       onChange={handleReplyContentChange}
                       placeholder={`Antworten Sie ${comment.userName}...`}
@@ -522,7 +527,6 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
                       rows={2}
                       maxLength={1000}
                       disabled={submitting}
-                      autoFocus
                     />
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-xs text-white/60">
@@ -562,7 +566,7 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
         </div>
       )}
     </div>
-  ), [replyingTo, replyContent, submitting, user, isSignedIn, expandedComments, editingComment, editContent, cancelReply, handleReplyContentChange])
+  )
 
   // Zeitformat
   const formatDate = (dateString: string) => {
