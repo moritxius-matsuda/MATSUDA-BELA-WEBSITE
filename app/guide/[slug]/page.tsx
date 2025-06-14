@@ -6,6 +6,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { getGuideBySlug } from '@/data/guides'
 import type { Guide, GuideSection } from '@/data/guides'
 import { useUser } from '@clerk/nextjs'
+import GuideRating from '@/components/GuideRating'
+import GuideComments from '@/components/GuideComments'
 
 export default function DynamicGuidePage() {
   const params = useParams()
@@ -344,6 +346,10 @@ export default function DynamicGuidePage() {
             )}
           </div>
         </div>
+
+        {/* Bewertungs- und Kommentarsystem */}
+        <GuideRating guideSlug={slug} />
+        <GuideComments guideSlug={slug} />
       </div>
     </div>
   )
