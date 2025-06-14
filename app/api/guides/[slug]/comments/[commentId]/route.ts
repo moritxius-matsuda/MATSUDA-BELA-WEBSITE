@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs'
+import { auth, currentUser } from '@clerk/nextjs'
 import { getComment, updateComment, deleteComment } from '@/lib/kv-storage'
+import { canDeleteComment, canEditComment } from '@/lib/admin'
 
 // PUT - Kommentar bearbeiten
 export async function PUT(
@@ -44,8 +45,8 @@ export async function PUT(
       )
     }
 
-    // Überprüfen, ob der Benutzer der Autor des Kommentars ist
-    if (comment.userId !== userId) {
+    // Überprüfen, ob der Benutzer berechtigt ist, den Kommentar zu bearbeiten
+    if (!canEditComment(userId, comment.userId)) {
       return NextResponse.json(
         { success: false, error: 'Keine Berechtigung zum Bearbeiten dieses Kommentars' },
         { status: 403 }
@@ -88,6 +89,7 @@ export async function DELETE(
 ) {
   try {
     const { userId } = auth()
+    const user = await currentUser()
     
     if (!userId) {
       return NextResponse.json(
@@ -106,8 +108,9 @@ export async function DELETE(
       )
     }
 
-    // Überprüfen, ob der Benutzer der Autor des Kommentars ist
-    if (comment.userId !== userId) {
+    // Überprüfen, ob der Benutzer berechtigt ist, den Kommentar zu löschen
+    const userEmail = user?.emailAddresses?.[0]?.emailAddress
+    if (!canDeleteComment(userId, userEmail, comment.userId)) {
       return NextResponse.json(
         { success: false, error: 'Keine Berechtigung zum Löschen dieses Kommentars' },
         { status: 403 }

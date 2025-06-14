@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import { useUser } from '@clerk/nextjs'
+import { isAdmin, canDeleteComment, canEditComment } from '@/lib/admin'
 
 interface GuideCommentsProps {
   guideSlug: string
@@ -30,6 +31,8 @@ interface Comment {
 
 export default function GuideComments({ guideSlug }: GuideCommentsProps) {
   const { user, isSignedIn } = useUser()
+  const userEmail = user?.emailAddresses?.[0]?.emailAddress
+  const isUserAdmin = isAdmin(user?.id, userEmail)
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -255,7 +258,13 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
 
   // Kommentar löschen
   const deleteComment = async (commentId: string) => {
-    if (!confirm('Sind Sie sicher, dass Sie diesen Kommentar löschen möchten?')) {
+    const comment = findCommentById(comments, commentId)
+    const isOwnComment = comment?.userId === user?.id
+    const confirmMessage = isUserAdmin && !isOwnComment 
+      ? 'Als Admin löschen Sie einen fremden Kommentar. Sind Sie sicher?' 
+      : 'Sind Sie sicher, dass Sie diesen Kommentar löschen möchten?'
+    
+    if (!confirm(confirmMessage)) {
       return
     }
 
@@ -371,32 +380,36 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
                 )}
               </div>
               
-              {/* Edit/Delete Buttons für eigene Kommentare */}
-              {user && comment.userId === user.id && (
+              {/* Edit/Delete Buttons */}
+              {user && (canEditComment(user.id, comment.userId) || canDeleteComment(user.id, userEmail, comment.userId)) && (
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => startEditComment(comment)}
-                    className="text-white/60 hover:text-white text-xs transition-colors duration-300"
-                    title="Bearbeiten"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => deleteComment(comment.id)}
-                    disabled={deletingComment === comment.id}
-                    className="text-white/60 hover:text-red-400 text-xs transition-colors duration-300 disabled:opacity-50"
-                    title="Löschen"
-                  >
-                    {deletingComment === comment.id ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400"></div>
-                    ) : (
+                  {canEditComment(user.id, comment.userId) && (
+                    <button
+                      onClick={() => startEditComment(comment)}
+                      className="text-white/60 hover:text-white text-xs transition-colors duration-300"
+                      title="Bearbeiten"
+                    >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                    )}
-                  </button>
+                    </button>
+                  )}
+                  {canDeleteComment(user.id, userEmail, comment.userId) && (
+                    <button
+                      onClick={() => deleteComment(comment.id)}
+                      disabled={deletingComment === comment.id}
+                      className="text-white/60 hover:text-red-400 text-xs transition-colors duration-300 disabled:opacity-50"
+                      title={isUserAdmin && comment.userId !== user.id ? "Löschen (Admin)" : "Löschen"}
+                    >
+                      {deletingComment === comment.id ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400"></div>
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      )}
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -592,12 +605,19 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
     <div className="glass-card p-6 mt-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-white flex items-center gap-2">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-          Kommentare ({comments.length})
-        </h3>
+        <div className="flex items-center gap-4">
+          <h3 className="text-xl font-semibold text-white flex items-center gap-2">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            Kommentare ({comments.length})
+          </h3>
+          {isUserAdmin && (
+            <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full border border-red-500/30">
+              Admin
+            </span>
+          )}
+        </div>
         
         {isSignedIn && !showCommentForm && (
           <button
