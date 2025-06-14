@@ -8,8 +8,8 @@ import { ClerkProvider } from '@clerk/nextjs'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Matsuda Béla Website',
-  description: 'Relais Steuerung System',
+  title: 'Matsuda Béla Guides',
+  description: 'Entdecke umfassende Anleitungen für Server-Administration, Virtualisierung und mehr',
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
