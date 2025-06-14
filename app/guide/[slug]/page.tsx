@@ -24,7 +24,7 @@ export default function DynamicGuidePage() {
 
   const fetchComments = async () => {
     try {
-      const response = await fetch(`/api/guides/${slug}/comments`);
+      const response = await fetch(`/api/guides/${slug}/comments?slug=${slug}`);
       if (!response.ok) throw new Error('Failed to fetch comments');
       const comments = await response.json();
       if (guide) {
@@ -41,13 +41,11 @@ export default function DynamicGuidePage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/guides/${slug}/comments`, {
+      const response = await fetch(`/api/guides/${slug}/comments?slug=${slug}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          content: newComment,
-          author: user.fullName || user.emailAddresses[0]?.emailAddress || 'Anonymous',
-          authorId: user.id
+          content: newComment
         })
       });
       
@@ -67,12 +65,11 @@ export default function DynamicGuidePage() {
     
     setIsVoting(true);
     try {
-      const response = await fetch(`/api/guides/${slug}/comments/${commentId}/vote`, {
+      const response = await fetch(`/api/guides/${slug}/comments/${commentId}/vote?slug=${slug}&commentId=${commentId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          voteType,
-          userId: user.id
+          voteType
         })
       });
       
