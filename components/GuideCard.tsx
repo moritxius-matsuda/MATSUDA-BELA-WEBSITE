@@ -112,10 +112,7 @@ export default function GuideCard({
             </div>
           </div>
 
-          {/* Comments Section */}
-          <div className="mt-6">
-            <GuideComments guideId={slug} />
-          </div>
+
         </div>
       </div>
     </Link>
