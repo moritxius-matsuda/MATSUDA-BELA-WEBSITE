@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
-import { getRating, updateRating, type GuideRating } from '@/lib/storage'
+import { getRating, updateRating, generateSessionId, type GuideRating } from '@/lib/kv-storage'
 
 // GET - Bewertungen für einen Guide abrufen
 export async function GET(
@@ -11,7 +11,7 @@ export async function GET(
     const { userId } = auth()
     const slug = params.slug
     
-    const rating = getRating(slug)
+    const rating = await getRating(slug)
 
     return NextResponse.json({
       success: true,
@@ -19,7 +19,7 @@ export async function GET(
         totalLikes: rating.totalLikes,
         totalDislikes: rating.totalDislikes,
         userReaction: (() => {
-          const userKey = userId || `anonymous_${request.ip || request.headers.get('x-forwarded-for') || 'unknown'}`
+          const userKey = userId || generateSessionId(request)
           return rating.userReactions[userKey] || null
         })(),
         ratio: rating.totalLikes + rating.totalDislikes > 0 
@@ -45,7 +45,7 @@ export async function POST(
     const { userId } = auth()
     
     // Verwende userId oder eine Session-ID für anonyme Benutzer
-    const userKey = userId || `anonymous_${request.ip || request.headers.get('x-forwarded-for') || 'unknown'}`
+    const userKey = userId || generateSessionId(request)
 
     const slug = params.slug
     const body = await request.json()
@@ -58,7 +58,7 @@ export async function POST(
       )
     }
 
-    const rating = getRating(slug)
+    const rating = await getRating(slug)
     const currentReaction = rating.userReactions[userKey]
     
     let newTotalLikes = rating.totalLikes
@@ -85,7 +85,7 @@ export async function POST(
     }
 
     // Rating aktualisieren
-    updateRating(slug, {
+    await updateRating(slug, {
       totalLikes: newTotalLikes,
       totalDislikes: newTotalDislikes,
       userReactions: newUserReactions

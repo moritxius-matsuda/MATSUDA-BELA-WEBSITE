@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
-import { getComments, addComment, getComment, type Comment } from '@/lib/storage'
+import { getComments, addComment, getComment, generateSessionId, type Comment } from '@/lib/kv-storage'
 
 // GET - Kommentare für einen Guide abrufen
 export async function GET(
@@ -10,7 +10,7 @@ export async function GET(
   try {
     const { userId } = auth()
     const slug = params.slug
-    const guideComments = getComments(slug)
+    const guideComments = await getComments(slug)
     
     // Sortiere Kommentare nach Datum (neueste zuerst)
     const sortedComments = guideComments.sort((a, b) => 
@@ -18,7 +18,7 @@ export async function GET(
     )
 
     // Verwende userId oder eine Session-ID für anonyme Benutzer
-    const userKey = userId || `anonymous_${request.ip || request.headers.get('x-forwarded-for') || 'unknown'}`
+    const userKey = userId || generateSessionId(request)
     
     // Füge userReaction für jeden Kommentar hinzu
     const commentsWithUserReaction = sortedComments.map(comment => ({
@@ -75,7 +75,7 @@ export async function POST(
 
     // Überprüfe ob parentId existiert (falls es eine Antwort ist)
     if (parentId) {
-      const parentComment = getComment(slug, parentId)
+      const parentComment = await getComment(slug, parentId)
       if (!parentComment) {
         return NextResponse.json(
           { success: false, error: 'Eltern-Kommentar nicht gefunden' },
@@ -102,7 +102,7 @@ export async function POST(
     }
 
     // Kommentar zur Liste hinzufügen
-    addComment(slug, newComment)
+    await addComment(slug, newComment)
 
     return NextResponse.json({
       success: true,

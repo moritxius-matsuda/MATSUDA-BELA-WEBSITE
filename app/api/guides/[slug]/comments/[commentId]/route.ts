@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
-import { getComment, updateComment, commentsStorage } from '@/lib/storage'
+import { getComment, updateComment, deleteComment } from '@/lib/kv-storage'
 
 // PUT - Kommentar bearbeiten
 export async function PUT(
@@ -35,7 +35,7 @@ export async function PUT(
       )
     }
 
-    const comment = getComment(slug, commentId)
+    const comment = await getComment(slug, commentId)
 
     if (!comment) {
       return NextResponse.json(
@@ -53,7 +53,7 @@ export async function PUT(
     }
 
     // Kommentar aktualisieren
-    const success = updateComment(slug, commentId, {
+    const success = await updateComment(slug, commentId, {
       content: content.trim(),
       updatedAt: new Date().toISOString()
     })
@@ -65,7 +65,7 @@ export async function PUT(
       )
     }
 
-    const updatedComment = getComment(slug, commentId)
+    const updatedComment = await getComment(slug, commentId)
 
     return NextResponse.json({
       success: true,
@@ -97,7 +97,7 @@ export async function DELETE(
     }
 
     const { slug, commentId } = params
-    const comment = getComment(slug, commentId)
+    const comment = await getComment(slug, commentId)
 
     if (!comment) {
       return NextResponse.json(
@@ -114,18 +114,15 @@ export async function DELETE(
       )
     }
 
-    // Kommentar aus der Liste entfernen
-    const guideComments = commentsStorage[slug] || []
-    const commentIndex = guideComments.findIndex(c => c.id === commentId)
+    // Kommentar löschen
+    const success = await deleteComment(slug, commentId)
     
-    if (commentIndex === -1) {
+    if (!success) {
       return NextResponse.json(
-        { success: false, error: 'Kommentar nicht gefunden' },
-        { status: 404 }
+        { success: false, error: 'Fehler beim Löschen des Kommentars' },
+        { status: 500 }
       )
     }
-
-    commentsStorage[slug].splice(commentIndex, 1)
 
     return NextResponse.json({
       success: true,

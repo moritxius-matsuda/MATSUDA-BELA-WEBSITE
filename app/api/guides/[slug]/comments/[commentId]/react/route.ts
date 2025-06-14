@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
-import { getComment, updateComment } from '@/lib/storage'
+import { getComment, updateComment, generateSessionId } from '@/lib/kv-storage'
 
 // POST - Like/Dislike für einen Kommentar
 export async function POST(
@@ -21,7 +21,7 @@ export async function POST(
       )
     }
 
-    const comment = getComment(slug, commentId)
+    const comment = await getComment(slug, commentId)
 
     if (!comment) {
       return NextResponse.json(
@@ -31,7 +31,7 @@ export async function POST(
     }
 
     // Verwende userId oder eine Session-ID für anonyme Benutzer
-    const userKey = userId || `anonymous_${request.ip || request.headers.get('x-forwarded-for') || 'unknown'}`
+    const userKey = userId || generateSessionId(request)
     
     // Stelle sicher, dass userReactions existiert
     if (!comment.userReactions) {
@@ -64,7 +64,7 @@ export async function POST(
     }
 
     // Kommentar aktualisieren
-    updateComment(slug, commentId, {
+    await updateComment(slug, commentId, {
       likes: newLikes,
       dislikes: newDislikes,
       userReactions: newUserReactions
