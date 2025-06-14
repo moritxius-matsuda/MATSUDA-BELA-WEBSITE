@@ -33,20 +33,36 @@ export const ratingsStorage: { [guideSlug: string]: GuideRating } = {}
 
 // Hilfsfunktionen
 export const getComments = (guideSlug: string): Comment[] => {
-  const allComments = commentsStorage[guideSlug] || []
-  
-  // Organisiere Kommentare in einer Hierarchie
-  const topLevelComments = allComments.filter(c => !c.parentId)
-  const replies = allComments.filter(c => c.parentId)
-  
-  // Füge Antworten zu ihren Eltern-Kommentaren hinzu
-  topLevelComments.forEach(comment => {
-    comment.replies = replies.filter(r => r.parentId === comment.id)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-    comment.replyCount = comment.replies.length
-  })
-  
-  return topLevelComments
+  try {
+    if (!guideSlug) return []
+    
+    const allComments = commentsStorage[guideSlug] || []
+    
+    // Stelle sicher, dass alle Kommentare die erforderlichen Eigenschaften haben
+    const validComments = allComments.map(comment => ({
+      ...comment,
+      userReactions: comment.userReactions || {},
+      likes: comment.likes || 0,
+      dislikes: comment.dislikes || 0,
+      replyCount: 0 // Wird später berechnet
+    }))
+    
+    // Organisiere Kommentare in einer Hierarchie
+    const topLevelComments = validComments.filter(c => !c.parentId)
+    const replies = validComments.filter(c => c.parentId)
+    
+    // Füge Antworten zu ihren Eltern-Kommentaren hinzu
+    topLevelComments.forEach(comment => {
+      comment.replies = replies.filter(r => r.parentId === comment.id)
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      comment.replyCount = comment.replies.length
+    })
+    
+    return topLevelComments
+  } catch (error) {
+    console.error('Error getting comments:', error)
+    return []
+  }
 }
 
 export const addComment = (guideSlug: string, comment: Comment): void => {
@@ -81,13 +97,46 @@ export const updateComment = (guideSlug: string, commentId: string, updates: Par
 }
 
 export const getRating = (guideSlug: string): GuideRating => {
-  return ratingsStorage[guideSlug] || {
-    guideSlug,
-    totalLikes: 0,
-    totalDislikes: 0,
-    userReactions: {},
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+  try {
+    if (!guideSlug) {
+      throw new Error('Guide slug is required')
+    }
+    
+    const rating = ratingsStorage[guideSlug]
+    
+    if (!rating) {
+      // Erstelle ein neues Rating-Objekt
+      const newRating: GuideRating = {
+        guideSlug,
+        totalLikes: 0,
+        totalDislikes: 0,
+        userReactions: {},
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+      ratingsStorage[guideSlug] = newRating
+      return newRating
+    }
+    
+    // Stelle sicher, dass alle erforderlichen Eigenschaften vorhanden sind
+    return {
+      guideSlug: rating.guideSlug || guideSlug,
+      totalLikes: rating.totalLikes || 0,
+      totalDislikes: rating.totalDislikes || 0,
+      userReactions: rating.userReactions || {},
+      createdAt: rating.createdAt || new Date().toISOString(),
+      updatedAt: rating.updatedAt || new Date().toISOString()
+    }
+  } catch (error) {
+    console.error('Error getting rating:', error)
+    return {
+      guideSlug,
+      totalLikes: 0,
+      totalDislikes: 0,
+      userReactions: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
   }
 }
 

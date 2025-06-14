@@ -18,7 +18,10 @@ export async function GET(
       rating: {
         totalLikes: rating.totalLikes,
         totalDislikes: rating.totalDislikes,
-        userReaction: userId ? (rating.userReactions[userId] || null) : null,
+        userReaction: (() => {
+          const userKey = userId || `anonymous_${request.ip || request.headers.get('x-forwarded-for') || 'unknown'}`
+          return rating.userReactions[userKey] || null
+        })(),
         ratio: rating.totalLikes + rating.totalDislikes > 0 
           ? Math.round((rating.totalLikes / (rating.totalLikes + rating.totalDislikes)) * 100)
           : 0
@@ -41,12 +44,8 @@ export async function POST(
   try {
     const { userId } = auth()
     
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Authentifizierung erforderlich' },
-        { status: 401 }
-      )
-    }
+    // Verwende userId oder eine Session-ID für anonyme Benutzer
+    const userKey = userId || `anonymous_${request.ip || request.headers.get('x-forwarded-for') || 'unknown'}`
 
     const slug = params.slug
     const body = await request.json()
@@ -60,7 +59,7 @@ export async function POST(
     }
 
     const rating = getRating(slug)
-    const currentReaction = rating.userReactions[userId]
+    const currentReaction = rating.userReactions[userKey]
     
     let newTotalLikes = rating.totalLikes
     let newTotalDislikes = rating.totalDislikes
@@ -76,13 +75,13 @@ export async function POST(
     // Füge neue Reaktion hinzu (außer bei 'remove')
     if (reaction === 'like' && currentReaction !== 'like') {
       newTotalLikes += 1
-      newUserReactions[userId] = 'like'
+      newUserReactions[userKey] = 'like'
     } else if (reaction === 'dislike' && currentReaction !== 'dislike') {
       newTotalDislikes += 1
-      newUserReactions[userId] = 'dislike'
+      newUserReactions[userKey] = 'dislike'
     } else {
       // Reaktion entfernen
-      delete newUserReactions[userId]
+      delete newUserReactions[userKey]
     }
 
     // Rating aktualisieren
@@ -101,7 +100,7 @@ export async function POST(
       rating: {
         totalLikes: newTotalLikes,
         totalDislikes: newTotalDislikes,
-        userReaction: newUserReactions[userId] || null,
+        userReaction: newUserReactions[userKey] || null,
         ratio: newRatio
       },
       message: 'Bewertung aktualisiert'
