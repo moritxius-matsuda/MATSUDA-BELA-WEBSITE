@@ -513,59 +513,7 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
               )}
             </div>
 
-            {/* Reply Form */}
-            {replyingTo === comment.id && (
-              <div className="mb-3 p-3 bg-white/5 rounded-lg border border-white/10">
-                <div className="flex items-start gap-3">
-                  {user?.imageUrl ? (
-                    <img 
-                      src={user.imageUrl} 
-                      alt={user.fullName || 'User'}
-                      className="w-8 h-8 rounded-full border border-white/20"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">
-                        {(user?.fullName || user?.firstName || 'U').charAt(0)}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <textarea
-                      ref={replyTextareaRef}
-                      value={replyContent}
-                      onChange={handleReplyContentChange}
-                      placeholder={`Antworten Sie ${comment.userName}...`}
-                      className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-blue-400/50 focus:bg-white/15 resize-none text-sm"
-                      rows={2}
-                      maxLength={1000}
-                      disabled={submitting}
-                    />
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-white/60">
-                        {replyContent.length}/1000 Zeichen
-                      </span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={cancelReply}
-                          className="px-3 py-1 text-xs text-white/70 hover:text-white transition-colors duration-300"
-                          disabled={submitting}
-                        >
-                          Abbrechen
-                        </button>
-                        <button
-                          onClick={() => submitReply(comment.id)}
-                          disabled={submitting || !replyContent.trim()}
-                          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white text-xs rounded-lg transition-colors duration-300"
-                        >
-                          {submitting ? 'Wird gesendet...' : 'Antworten'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
       </div>
@@ -726,7 +674,62 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
       ) : (
         <div className="space-y-4">
           {comments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} />
+            <div key={comment.id}>
+              <CommentItem comment={comment} />
+              {/* Reply Form außerhalb der CommentItem-Komponente */}
+              {replyingTo === comment.id && (
+                <div className="ml-4 mt-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                  <div className="flex items-start gap-3">
+                    {user?.imageUrl ? (
+                      <img 
+                        src={user.imageUrl} 
+                        alt={user.fullName || 'User'}
+                        className="w-8 h-8 rounded-full border border-white/20"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">
+                          {(user?.fullName || user?.firstName || 'U').charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <textarea
+                        value={replyContent}
+                        onChange={handleReplyContentChange}
+                        placeholder={`Antworten Sie ${comment.userName}...`}
+                        className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-blue-400/50 focus:bg-white/15 resize-none text-sm"
+                        rows={2}
+                        maxLength={1000}
+                        disabled={submitting}
+                        autoFocus
+                      />
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-xs text-white/60">
+                          {replyContent.length}/1000 Zeichen
+                        </span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={cancelReply}
+                            className="px-3 py-1 text-xs text-white/70 hover:text-white transition-colors duration-300"
+                            disabled={submitting}
+                          >
+                            Abbrechen
+                          </button>
+                          <button
+                            onClick={() => submitReply(comment.id)}
+                            disabled={submitting || !replyContent.trim()}
+                            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white text-xs rounded-lg transition-colors duration-300"
+                          >
+                            {submitting ? 'Wird gesendet...' : 'Antworten'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       )}
