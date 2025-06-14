@@ -96,12 +96,25 @@ export default function GuideCard({
           {/* Footer */}
           <div className="flex justify-between items-center text-xs text-white/60 mt-auto">
             <span>📖 {readTime}</span>
-            <span className="flex items-center">
-              Mehr lesen
-              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
+            <div className="flex items-center space-x-4">
+              <span className="flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v3M4 7l2-1V4a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v3l2-1m-2 1l-2 1m2-1v2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+                </svg>
+                Mehr lesen
+              </span>
+              <span className="flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v3M4 7l2-1V4a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v3l2-1m-2 1l-2 1m2-1v2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+                </svg>
+                Kommentieren
+              </span>
+            </div>
+          </div>
+
+          {/* Comments Section */}
+          <div className="mt-6">
+            <GuideComments guideId={slug} />
           </div>
         </div>
       </div>
