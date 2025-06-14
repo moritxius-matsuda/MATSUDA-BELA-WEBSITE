@@ -482,54 +482,67 @@ export default function DynamicGuidePage() {
 
           {/* Comments List */}
           <div className="space-y-6">
-            {guide.comments.map((comment) => (
-              <div key={comment.id} className="glass-card p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="flex items-center mb-2">
-                      <div className="w-8 h-8 bg-blue-400/20 rounded-full flex items-center justify-center mr-3">
-                        <span className="text-blue-300 font-bold">
-                          {comment.author.split(' ').map(n => n[0]).join('')}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">{comment.author}</p>
-                        <p className="text-white/60 text-sm">
-                          {new Date(comment.createdAt).toLocaleDateString('de-DE')}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-white/90 text-sm">{comment.content}</p>
-                  </div>
-                  <div className="flex flex-col items-end space-y-2">
-                    <button 
-                      onClick={() => handleVote(comment.id, 'like')}
-                      disabled={isVoting}
-                      className={`flex items-center transition-colors ${
-                        isVoting ? 'text-white/40 cursor-not-allowed' : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v3M4 7l2-1V4a1 1 0 011-1h5a1 1 0 011 1v3l2-1m-2 1l-2 1m2-1v2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
-                      </svg>
-                      <span>{comment.likes}</span>
-                    </button>
-                    <button 
-                      onClick={() => handleVote(comment.id, 'dislike')}
-                      disabled={isVoting}
-                      className={`flex items-center transition-colors ${
-                        isVoting ? 'text-white/40 cursor-not-allowed' : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.293A2.955 2.955 0 013 12.5V8.386a2.955 2.955 0 012.293-1.707L10 2m7 7h5m-5 4v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5m7-7H2" />
-                      </svg>
-                      <span>{comment.dislikes}</span>
-                    </button>
-                  </div>
+            {loading ? (
+              <div className="glass-card p-4">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-white/10 rounded w-full mb-2"></div>
+                  <div className="h-3 bg-white/10 rounded w-3/4"></div>
                 </div>
               </div>
-            ))}
+            ) : guide?.comments?.length ? (
+              guide.comments.map((comment) => (
+                <div key={comment.id} className="glass-card p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center mb-2">
+                        <div className="w-8 h-8 bg-blue-400/20 rounded-full flex items-center justify-center mr-3">
+                          <span className="text-blue-300 font-bold">
+                            {comment.author.split(' ').map(n => n[0]).join('')}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-white font-medium">{comment.author}</p>
+                          <p className="text-white/60 text-sm">
+                            {new Date(comment.createdAt).toLocaleDateString('de-DE')}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-white/90 text-sm">{comment.content}</p>
+                    </div>
+                    <div className="flex flex-col items-end space-y-2">
+                      <button 
+                        onClick={() => handleVote(comment.id, 'like')}
+                        disabled={isVoting}
+                        className={`flex items-center transition-colors ${
+                          isVoting ? 'text-white/40 cursor-not-allowed' : 'text-white/70 hover:text-white'
+                        }`}
+                      >
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v3M4 7l2-1V4a1 1 0 011-1h5a1 1 0 011 1v3l2-1m-2 1l-2 1m2-1v2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+                        </svg>
+                        <span>{comment.likes}</span>
+                      </button>
+                      <button 
+                        onClick={() => handleVote(comment.id, 'dislike')}
+                        disabled={isVoting}
+                        className={`flex items-center transition-colors ${
+                          isVoting ? 'text-white/40 cursor-not-allowed' : 'text-white/70 hover:text-white'
+                        }`}
+                      >
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.293A2.955 2.955 0 013 12.5V8.386a2.955 2.955 0 012.293-1.707L10 2m7 7h5m-5 4v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5m7-7H2" />
+                        </svg>
+                        <span>{comment.dislikes}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="glass-card p-4">
+                <p className="text-white/60 text-center">Keine Kommentare vorhanden.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
