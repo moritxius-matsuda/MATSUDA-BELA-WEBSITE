@@ -114,7 +114,11 @@ export default function GuideComments({ guideSlug }: GuideCommentsProps) {
           setReplyingTo(null)
           setReplyContent('')
           // Erweitere automatisch den Kommentar, um die neue Antwort zu zeigen
-          setExpandedComments(prev => new Set([...prev, parentId]))
+          setExpandedComments(prev => {
+            const newSet = new Set(prev)
+            newSet.add(parentId)
+            return newSet
+          })
         }
       } else {
         const errorData = await response.json()
