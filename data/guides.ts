@@ -4,15 +4,6 @@ export interface GuideSection {
   content: string
 }
 
-export interface Comment {
-  id: string
-  content: string
-  author: string
-  createdAt: string
-  likes: number
-  dislikes: number
-}
-
 export interface Guide {
   id: string
   title: string
@@ -29,9 +20,6 @@ export interface Guide {
   authorRole?: string
   authorImage?: string
   sections?: GuideSection[]
-  likes: number
-  dislikes: number
-  comments: Comment[]
 }
 
 export const guides: Guide[] = [
