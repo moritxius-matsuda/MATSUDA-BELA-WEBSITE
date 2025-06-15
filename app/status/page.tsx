@@ -5,6 +5,7 @@ import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import { mockStatusData, getStatusColor, getStatusBgColor, getStatusText } from '@/lib/status-data'
 import { SystemStatus, StatusIncident, MaintenanceWindow } from '@/types/status'
+import StatusTimeline from '@/components/status/StatusTimeline'
 
 export default function StatusPage() {
   const { user } = useUser()
@@ -81,6 +82,26 @@ export default function StatusPage() {
             Aktuelle Verfügbarkeit und Performance unserer Services
           </p>
           
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="glass-card p-4 text-center">
+              <div className="text-2xl font-bold text-green-400">99.9%</div>
+              <div className="text-white/60 text-sm">Verfügbarkeit (90 Tage)</div>
+            </div>
+            <div className="glass-card p-4 text-center">
+              <div className="text-2xl font-bold text-blue-400">125ms</div>
+              <div className="text-white/60 text-sm">Ø Antwortzeit</div>
+            </div>
+            <div className="glass-card p-4 text-center">
+              <div className="text-2xl font-bold text-yellow-400">2</div>
+              <div className="text-white/60 text-sm">Vorfälle (30 Tage)</div>
+            </div>
+            <div className="glass-card p-4 text-center">
+              <div className="text-2xl font-bold text-purple-400">0</div>
+              <div className="text-white/60 text-sm">Geplante Wartungen</div>
+            </div>
+          </div>
+          
           {/* Overall Status */}
           <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-full border ${getStatusBgColor(statusData.overall)}`}>
             <div className={`w-3 h-3 rounded-full ${statusData.overall === 'operational' ? 'bg-green-400' : 'bg-red-400'} animate-pulse`}></div>
@@ -121,45 +142,54 @@ export default function StatusPage() {
 
         {/* Content */}
         {selectedTab === 'current' && (
-          <div className="space-y-6">
-            {statusData.categories.map((category) => (
-              <div key={category.id} className="glass-card p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold text-white">{category.name}</h3>
-                    <p className="text-white/60 text-sm">{category.description}</p>
+          <div className="space-y-8">
+            {/* Service Status Cards */}
+            <div className="space-y-6">
+              {statusData.categories.map((category) => (
+                <div key={category.id} className="glass-card p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-xl font-semibold text-white">{category.name}</h3>
+                      <p className="text-white/60 text-sm">{category.description}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {category.services.map((service) => (
+                      <div key={service.id} className="space-y-3">
+                        {/* Service Header */}
+                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-3 h-3 rounded-full ${service.status === 'operational' ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                            <div>
+                              <h4 className="font-medium text-white">{service.name}</h4>
+                              <p className="text-white/60 text-sm">{service.description}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="text-right">
+                            <span className={`text-sm font-medium ${getStatusColor(service.status)}`}>
+                              {getStatusText(service.status)}
+                            </span>
+                            {service.responseTime && (
+                              <p className="text-white/50 text-xs mt-1">
+                                {service.responseTime}ms
+                              </p>
+                            )}
+                            <p className="text-white/40 text-xs">
+                              {formatRelativeTime(service.lastChecked)}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Status Timeline - Last 90 Days */}
+                        <StatusTimeline serviceId={service.id} />
+                      </div>
+                    ))}
                   </div>
                 </div>
-                
-                <div className="space-y-3">
-                  {category.services.map((service) => (
-                    <div key={service.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-3 h-3 rounded-full ${service.status === 'operational' ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                        <div>
-                          <h4 className="font-medium text-white">{service.name}</h4>
-                          <p className="text-white/60 text-sm">{service.description}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="text-right">
-                        <span className={`text-sm font-medium ${getStatusColor(service.status)}`}>
-                          {getStatusText(service.status)}
-                        </span>
-                        {service.responseTime && (
-                          <p className="text-white/50 text-xs mt-1">
-                            {service.responseTime}ms
-                          </p>
-                        )}
-                        <p className="text-white/40 text-xs">
-                          {formatRelativeTime(service.lastChecked)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
