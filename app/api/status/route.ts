@@ -66,16 +66,28 @@ export async function GET() {
 // Endpoint für nur den Overall-Status (für Navbar)
 export async function HEAD() {
   try {
-    const overallStatus = getOverallStatus(mockStatusData.categories)
+    // Hole Overall-Status vom Monitoring-Server
+    const response = await fetch(`${MONITORING_SERVER_URL}/api/status`)
     
+    if (response.ok) {
+      const data = await response.json()
+      return new NextResponse(null, {
+        status: 200,
+        headers: {
+          'X-Overall-Status': data.overall || 'operational',
+          'X-Last-Updated': data.lastUpdated || new Date().toISOString()
+        }
+      })
+    } else {
+      throw new Error('Monitoring server not available')
+    }
+  } catch (error) {
     return new NextResponse(null, {
       status: 200,
       headers: {
-        'X-Overall-Status': overallStatus,
+        'X-Overall-Status': 'major_outage',
         'X-Last-Updated': new Date().toISOString()
       }
     })
-  } catch (error) {
-    return new NextResponse(null, { status: 500 })
   }
 }
