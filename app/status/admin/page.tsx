@@ -27,13 +27,17 @@ export default function StatusAdminPage() {
 
   const fetchIncidents = async () => {
     try {
-      const response = await fetch('/api/status/incidents')
+      const response = await fetch('/api/incidents')
       if (response.ok) {
         const data = await response.json()
-        setIncidents(data)
+        console.log('Admin: Received incidents data:', data)
+        // Handle both old format (direct array) and new format (object with incidents array)
+        const incidentsArray = Array.isArray(data) ? data : (data.incidents || [])
+        setIncidents(incidentsArray)
       }
     } catch (error) {
       console.error('Error fetching incidents:', error)
+      setIncidents([]) // Ensure incidents is always an array
     } finally {
       setLoading(false)
     }
@@ -43,7 +47,7 @@ export default function StatusAdminPage() {
     e.preventDefault()
     
     try {
-      const response = await fetch('/api/status/incidents', {
+      const response = await fetch('/api/incidents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,12 +73,12 @@ export default function StatusAdminPage() {
 
   const updateIncident = async (id: string, message: string, status: IncidentStatus) => {
     try {
-      const response = await fetch('/api/status/incidents', {
+      const response = await fetch(`/api/incidents/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id, message, status })
+        body: JSON.stringify({ message, status })
       })
 
       if (response.ok) {
@@ -231,7 +235,7 @@ export default function StatusAdminPage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
               <p className="text-white/60 mt-2">Lade Vorfälle...</p>
             </div>
-          ) : incidents.length === 0 ? (
+          ) : !Array.isArray(incidents) || incidents.length === 0 ? (
             <div className="glass-card p-8 text-center">
               <h3 className="text-xl font-semibold text-white mb-2">Keine Vorfälle</h3>
               <p className="text-white/60">Aktuell sind keine Vorfälle registriert.</p>
