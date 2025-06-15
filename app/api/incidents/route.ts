@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json()
-    console.log(`Received ${data.incidents?.length || 0} incidents`)
+    console.log(`Received incidents data:`, data)
+    console.log(`Number of incidents: ${data.incidents?.length || 0}`)
     
     return NextResponse.json(data)
 

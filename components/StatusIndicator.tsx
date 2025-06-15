@@ -26,18 +26,32 @@ export default function StatusIndicator() {
 
     const fetchCurrentIncidents = async () => {
       try {
+        console.log('StatusIndicator: Fetching current incidents...')
         const response = await fetch('/api/incidents?status=active&limit=1')
+        console.log('StatusIndicator: Response status:', response.status)
+        
         if (response.ok) {
           const data = await response.json()
+          console.log('StatusIndicator: Received incidents data:', data)
+          
           const incidents = data.incidents || []
+          console.log('StatusIndicator: Found incidents:', incidents.length)
+          
           if (incidents.length > 0) {
+            console.log('StatusIndicator: Setting current incident:', incidents[0].title)
             setCurrentIncident(incidents[0]) // Nehme den ersten/wichtigsten Vorfall
           } else {
+            console.log('StatusIndicator: No active incidents found')
             setCurrentIncident(null)
           }
+        } else {
+          console.error('StatusIndicator: Failed to fetch incidents, status:', response.status)
+          const errorText = await response.text()
+          console.error('StatusIndicator: Error response:', errorText)
+          setCurrentIncident(null)
         }
       } catch (error) {
-        console.error('Failed to fetch incidents:', error)
+        console.error('StatusIndicator: Failed to fetch incidents:', error)
         setCurrentIncident(null)
       }
     }
@@ -58,9 +72,13 @@ export default function StatusIndicator() {
 
   // Bestimme den finalen Status basierend auf Vorfällen
   const getFinalStatus = (): ServiceStatus => {
+    console.log('StatusIndicator: Current incident:', currentIncident?.title || 'None')
+    console.log('StatusIndicator: Base status:', status)
+    
     if (!currentIncident) return status
 
     // Map incident impact to service status
+    console.log('StatusIndicator: Incident impact:', currentIncident.impact)
     switch (currentIncident.impact) {
       case 'critical':
       case 'major_outage':
@@ -78,6 +96,9 @@ export default function StatusIndicator() {
 
   const finalStatus = getFinalStatus()
   const displayText = currentIncident ? currentIncident.title : (finalStatus === 'operational' ? 'Betriebsbereit' : getStatusText(finalStatus))
+  
+  console.log('StatusIndicator: Final status:', finalStatus)
+  console.log('StatusIndicator: Display text:', displayText)
 
   if (loading) {
     return (

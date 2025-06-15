@@ -47,7 +47,12 @@ router.get('/', async (req, res) => {
       updates: parseUpdates(incident.updates)
     }))
     
-    res.json(formattedIncidents)
+    res.json({ 
+      incidents: formattedIncidents,
+      total: formattedIncidents.length,
+      status: status || 'all',
+      timestamp: new Date().toISOString()
+    })
   } catch (error) {
     console.error('Error getting incidents:', error)
     res.status(500).json({ error: 'Failed to get incidents' })
