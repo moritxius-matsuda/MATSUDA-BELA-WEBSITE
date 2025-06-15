@@ -1,66 +1,65 @@
 import { NextResponse } from 'next/server'
-import { mockStatusData, getOverallStatus } from '@/lib/status-data'
-import { getIncidents, getMaintenance, getServiceStatuses } from '@/lib/status-db'
 
-// Simuliere echte Service-Checks
-async function checkServiceHealth(url?: string): Promise<{ status: 'operational' | 'degraded' | 'major_outage', responseTime?: number }> {
-  // Für Demo-Zwecke geben wir immer 'operational' zurück
-  // In einer echten Implementierung würden hier echte Health-Checks stattfinden
-  return { 
-    status: 'operational', 
-    responseTime: Math.floor(Math.random() * 300) + 50 // 50-350ms
-  }
-}
+const MONITORING_SERVER_URL = process.env.MONITORING_SERVER_URL || 'http://localhost:3001'
 
 export async function GET() {
   try {
-    // Hole echte Daten aus der Datenbank
-    const [incidents, maintenance, serviceStatuses] = await Promise.all([
-      getIncidents(),
-      getMaintenance(),
-      getServiceStatuses()
-    ])
+    // Hole Daten vom externen Monitoring-Server
+    const response = await fetch(`${MONITORING_SERVER_URL}/api/status`, {
+      headers: {
+        'User-Agent': 'moritxius.de-frontend'
+      },
+      // Cache für 30 Sekunden
+      next: { revalidate: 30 }
+    })
 
-    // Simuliere Live-Service-Checks und merge mit gespeicherten Daten
-    const updatedCategories = await Promise.all(
-      mockStatusData.categories.map(async (category) => {
-        const updatedServices = await Promise.all(
-          category.services.map(async (service) => {
-            const savedStatus = serviceStatuses[service.id]
-            const healthCheck = await checkServiceHealth(service.url)
-            
-            return {
-              ...service,
-              status: savedStatus?.status || healthCheck.status,
-              responseTime: savedStatus?.responseTime || healthCheck.responseTime,
-              lastChecked: savedStatus?.lastChecked || new Date().toISOString()
-            }
-          })
-        )
-        
-        return {
-          ...category,
-          services: updatedServices
-        }
-      })
-    )
-
-    const updatedStatusData = {
-      ...mockStatusData,
-      categories: updatedCategories,
-      incidents: incidents.length > 0 ? incidents : mockStatusData.incidents,
-      maintenance: maintenance.length > 0 ? maintenance : mockStatusData.maintenance,
-      overall: getOverallStatus(updatedCategories),
-      lastUpdated: new Date().toISOString()
+    if (!response.ok) {
+      throw new Error(`Monitoring server responded with ${response.status}`)
     }
 
-    return NextResponse.json(updatedStatusData)
+    const statusData = await response.json()
+    return NextResponse.json(statusData)
   } catch (error) {
-    console.error('Error fetching status:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch status' },
-      { status: 500 }
-    )
+    console.error('Error fetching status from monitoring server:', error)
+    
+    // Fallback zu Mock-Daten wenn Monitoring-Server nicht erreichbar ist
+    const fallbackData = {
+      overall: 'major_outage',
+      categories: [{
+        id: 'monitoring',
+        name: 'Monitoring System',
+        description: 'Status-Überwachung',
+        services: [{
+          id: 'monitoring-server',
+          name: 'Monitoring Server',
+          description: 'Externer Status-Monitoring-Server',
+          status: 'major_outage',
+          category: 'monitoring',
+          lastChecked: new Date().toISOString(),
+          errorMessage: 'Monitoring-Server nicht erreichbar'
+        }]
+      }],
+      incidents: [{
+        id: 'monitoring-outage',
+        title: 'Monitoring-Server nicht erreichbar',
+        description: 'Der externe Monitoring-Server ist derzeit nicht erreichbar.',
+        status: 'investigating',
+        impact: 'minor',
+        affectedServices: ['monitoring-server'],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        updates: [{
+          id: 'update-1',
+          message: 'Monitoring-Server ist nicht erreichbar. Status-Informationen können nicht abgerufen werden.',
+          status: 'investigating',
+          timestamp: new Date().toISOString()
+        }]
+      }],
+      maintenance: [],
+      lastUpdated: new Date().toISOString()
+    }
+    
+    return NextResponse.json(fallbackData)
   }
 }
 

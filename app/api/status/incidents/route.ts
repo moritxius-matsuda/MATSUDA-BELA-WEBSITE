@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs'
-import { createIncident, getIncidents, updateIncident } from '@/lib/status-db'
+
+const MONITORING_SERVER_URL = process.env.MONITORING_SERVER_URL || 'http://localhost:3001'
 
 // GET - Alle Incidents abrufen
 export async function GET() {
   try {
-    const incidents = await getIncidents()
+    const response = await fetch(`${MONITORING_SERVER_URL}/api/incidents`)
+    
+    if (!response.ok) {
+      throw new Error(`Monitoring server responded with ${response.status}`)
+    }
+    
+    const incidents = await response.json()
     return NextResponse.json(incidents)
   } catch (error) {
     console.error('Error fetching incidents:', error)
@@ -24,28 +31,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Hier würden wir normalerweise prüfen, ob der User Admin-Rechte hat
-    // Für Demo-Zwecke lassen wir es erstmal offen
-
     const body = await request.json()
-    const { title, description, impact, affectedServices } = body
-
-    if (!title || !description || !impact || !affectedServices) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
-
-    const incident = await createIncident({
-      title,
-      description,
-      status: 'investigating',
-      impact,
-      affectedServices,
-      updates: []
+    
+    const response = await fetch(`${MONITORING_SERVER_URL}/api/incidents`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body)
     })
 
+    if (!response.ok) {
+      const error = await response.json()
+      return NextResponse.json(error, { status: response.status })
+    }
+
+    const incident = await response.json()
     return NextResponse.json(incident, { status: 201 })
   } catch (error) {
     console.error('Error creating incident:', error)
@@ -65,23 +66,22 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, message, status } = body
+    const { id } = body
+    
+    const response = await fetch(`${MONITORING_SERVER_URL}/api/incidents/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body)
+    })
 
-    if (!id || !message || !status) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+    if (!response.ok) {
+      const error = await response.json()
+      return NextResponse.json(error, { status: response.status })
     }
 
-    const incident = await updateIncident(id, { message, status })
-    if (!incident) {
-      return NextResponse.json(
-        { error: 'Incident not found' },
-        { status: 404 }
-      )
-    }
-
+    const incident = await response.json()
     return NextResponse.json(incident)
   } catch (error) {
     console.error('Error updating incident:', error)
