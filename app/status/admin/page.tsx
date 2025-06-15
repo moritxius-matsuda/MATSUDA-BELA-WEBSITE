@@ -73,20 +73,31 @@ export default function StatusAdminPage() {
 
   const updateIncident = async (id: string, message: string, status: IncidentStatus) => {
     try {
-      const response = await fetch(`/api/incidents/${id}`, {
+      console.log(`Admin: Updating incident ${id} to status ${status} with message: ${message}`)
+      
+      const response = await fetch('/api/incidents', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message, status })
+        body: JSON.stringify({ id, message, status })
       })
+
+      console.log(`Admin: Update response status: ${response.status}`)
 
       if (response.ok) {
         const updatedIncident = await response.json()
+        console.log('Admin: Updated incident:', updatedIncident)
         setIncidents(incidents.map(inc => inc.id === id ? updatedIncident : inc))
+        console.log('Admin: Incidents state updated')
+      } else {
+        const errorText = await response.text()
+        console.error('Admin: Update failed:', errorText)
+        alert(`Fehler beim Aktualisieren: ${errorText}`)
       }
     } catch (error) {
-      console.error('Error updating incident:', error)
+      console.error('Admin: Error updating incident:', error)
+      alert(`Fehler beim Aktualisieren: ${error.message}`)
     }
   }
 

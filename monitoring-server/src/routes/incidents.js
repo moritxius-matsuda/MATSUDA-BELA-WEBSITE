@@ -162,6 +162,24 @@ router.delete('/:id', async (req, res) => {
   }
 })
 
+// Get single incident
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    
+    const incident = await getIncidentById(id)
+    
+    if (!incident) {
+      return res.status(404).json({ error: 'Incident not found' })
+    }
+    
+    res.json(incident)
+  } catch (error) {
+    console.error('Error getting incident:', error)
+    res.status(500).json({ error: 'Failed to get incident' })
+  }
+})
+
 // Helper functions
 async function getIncidentById(id) {
   const incident = await getQuery(`
