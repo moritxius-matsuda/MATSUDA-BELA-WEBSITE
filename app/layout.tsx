@@ -4,6 +4,7 @@ import './globals.css'
 import '../styles/tiptap.css'
 import Navbar from '@/components/Navbar'
 import { ClerkProvider } from '@clerk/nextjs'
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -52,6 +53,7 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
+      <Analytics/>
       <html lang="de">
         <body className={`${inter.className}`} data-theme="light">
           <div className="liquid-bg">
