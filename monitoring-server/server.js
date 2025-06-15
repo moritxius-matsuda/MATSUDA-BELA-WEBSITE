@@ -2,7 +2,6 @@ const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
 const compression = require('compression')
-const cron = require('node-cron')
 require('dotenv').config()
 
 const { initDatabase } = require('./src/database')

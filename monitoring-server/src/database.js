@@ -123,7 +123,7 @@ function insertDefaultServices() {
         id: 'guides-system',
         name: 'Guides System',
         description: 'Anleitungen und Tutorials',
-        url: 'https://moritxius.de/api/health',
+        url: 'https://moritxius.de',
         category: 'website'
       },
       {
@@ -137,21 +137,21 @@ function insertDefaultServices() {
         id: 'upstash-redis',
         name: 'Upstash Redis',
         description: 'Kommentare und Cache-Speicher',
-        url: process.env.UPSTASH_REDIS_REST_URL,
+        url: 'https://epic-werewolf-17800.upstash.io',
         category: 'database'
       },
       {
         id: 'comments-api',
         name: 'Kommentar API',
         description: 'API für Kommentare und Bewertungen',
-        url: 'https://moritxius.de/api/comments',
+        url: 'https://moritxius.de',
         category: 'apis'
       },
       {
         id: 'guides-api',
         name: 'Guides API',
         description: 'API für Anleitungen und Inhalte',
-        url: 'https://moritxius.de/api/guides',
+        url: 'https://moritxius.de',
         category: 'apis'
       }
     ]

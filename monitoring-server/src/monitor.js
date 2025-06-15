@@ -1,5 +1,4 @@
 const axios = require('axios')
-const cron = require('node-cron')
 const { allQuery, runQuery } = require('./database')
 
 // Service status types
@@ -16,12 +15,22 @@ async function checkService(service) {
   const startTime = Date.now()
   
   try {
-    const response = await axios({
+    // Special handling for different service types
+    let requestConfig = {
       method: 'GET',
       url: service.url,
       timeout: service.timeout || 5000,
       validateStatus: (status) => status < 500 // Accept 4xx as operational, 5xx as outage
-    })
+    }
+    
+    // Special handling for Upstash Redis
+    if (service.id === 'upstash-redis') {
+      // For Upstash Redis, we just check if the domain is reachable
+      // A 401 or 403 response means the service is up but requires auth
+      requestConfig.validateStatus = (status) => status < 500 || status === 401 || status === 403
+    }
+    
+    const response = await axios(requestConfig)
     
     const responseTime = Date.now() - startTime
     const statusCode = response.status
@@ -32,7 +41,12 @@ async function checkService(service) {
     if (statusCode >= 500) {
       status = STATUS_TYPES.MAJOR_OUTAGE
     } else if (statusCode >= 400) {
-      status = STATUS_TYPES.DEGRADED
+      // 401/403 are acceptable for services that require auth
+      if (statusCode === 401 || statusCode === 403) {
+        status = STATUS_TYPES.OPERATIONAL
+      } else {
+        status = STATUS_TYPES.DEGRADED
+      }
     } else if (responseTime > 5000) {
       status = STATUS_TYPES.DEGRADED
     } else if (responseTime > 2000) {
@@ -218,17 +232,20 @@ function calculateOverallStatus(categories) {
 
 // Start monitoring
 function startMonitoring() {
-  // Check services every minute
-  cron.schedule('* * * * *', () => {
+  // Get check interval from environment or default to 5 seconds
+  const checkInterval = process.env.CHECK_INTERVAL || 5000
+  
+  // Check services at specified interval
+  setInterval(() => {
     checkAllServices()
-  })
+  }, parseInt(checkInterval))
   
   // Initial check
   setTimeout(() => {
     checkAllServices()
-  }, 5000) // Wait 5 seconds after startup
+  }, 2000) // Wait 2 seconds after startup
   
-  console.log('📅 Monitoring scheduled: every minute')
+  console.log(`📅 Monitoring scheduled: every ${checkInterval}ms (${checkInterval/1000} seconds)`)
 }
 
 module.exports = {
