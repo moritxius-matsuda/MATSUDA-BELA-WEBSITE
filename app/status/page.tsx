@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useUser } from '@clerk/nextjs'
+// import { useUser } from '@clerk/nextjs' // Removed for public access
 import Link from 'next/link'
 import { mockStatusData, getStatusColor, getStatusBgColor, getStatusText } from '@/lib/status-data'
 import { SystemStatus, StatusIncident, MaintenanceWindow, ServiceStatus } from '@/types/status'
 import StatusTimeline from '@/components/status/StatusTimeline'
 
 export default function StatusPage() {
-  const { user } = useUser()
+  // const { user } = useUser() // Removed for public access
   const [statusData, setStatusData] = useState<SystemStatus>(mockStatusData)
   const [selectedTab, setSelectedTab] = useState<'current' | 'incidents' | 'maintenance'>('current')
   const [stats, setStats] = useState({
@@ -21,8 +21,8 @@ export default function StatusPage() {
   const [currentIncidents, setCurrentIncidents] = useState<StatusIncident[]>([])
   const [loadingIncidents, setLoadingIncidents] = useState(true)
   
-  // Prüfe Admin-Berechtigung
-  const isAdmin = user?.publicMetadata?.admin === 1
+  // Admin-Berechtigung entfernt für öffentlichen Zugang
+  // const isAdmin = user?.publicMetadata?.admin === 1
 
   // Bestimme Gesamtstatus basierend auf aktuellen Vorfällen
   const getOverallStatusFromIncidents = (): ServiceStatus => {
@@ -170,14 +170,7 @@ export default function StatusPage() {
             <h1 className="text-4xl font-bold text-white">
               System Status
             </h1>
-            {isAdmin && (
-              <Link
-                href="/status/admin"
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-300 text-sm"
-              >
-                Admin Panel
-              </Link>
-            )}
+            {/* Admin Panel Link entfernt für öffentlichen Zugang */}
           </div>
           <p className="text-white/70 text-lg mb-6">
             Aktuelle Verfügbarkeit und Performance unserer Services
