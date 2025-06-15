@@ -1,30 +1,38 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useUser } from '@clerk/nextjs'
+import Link from 'next/link'
 import { mockStatusData, getStatusColor, getStatusBgColor, getStatusText } from '@/lib/status-data'
 import { SystemStatus, StatusIncident, MaintenanceWindow } from '@/types/status'
 
 export default function StatusPage() {
+  const { user } = useUser()
   const [statusData, setStatusData] = useState<SystemStatus>(mockStatusData)
   const [selectedTab, setSelectedTab] = useState<'current' | 'incidents' | 'maintenance'>('current')
+  
+  // Prüfe Admin-Berechtigung
+  const isAdmin = user?.publicMetadata?.admin === 1
 
-  // Simuliere Live-Updates
+  // Lade echte Daten von der API
   useEffect(() => {
-    const interval = setInterval(() => {
-      setStatusData(prev => ({
-        ...prev,
-        lastUpdated: new Date().toISOString(),
-        categories: prev.categories.map(category => ({
-          ...category,
-          services: category.services.map(service => ({
-            ...service,
-            lastChecked: new Date().toISOString(),
-            responseTime: Math.floor(Math.random() * 300) + 50 // 50-350ms
-          }))
-        }))
-      }))
-    }, 30000) // Update alle 30 Sekunden
+    const fetchStatusData = async () => {
+      try {
+        const response = await fetch('/api/status')
+        if (response.ok) {
+          const data = await response.json()
+          setStatusData(data)
+        }
+      } catch (error) {
+        console.error('Error fetching status data:', error)
+      }
+    }
 
+    // Initial fetch
+    fetchStatusData()
+
+    // Update alle 30 Sekunden
+    const interval = setInterval(fetchStatusData, 30000)
     return () => clearInterval(interval)
   }, [])
 
@@ -51,13 +59,24 @@ export default function StatusPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-black">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">
-            System Status
-          </h1>
+          <div className="flex justify-between items-center mb-4">
+            <div></div>
+            <h1 className="text-4xl font-bold text-white">
+              System Status
+            </h1>
+            {isAdmin && (
+              <Link
+                href="/status/admin"
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-300 text-sm"
+              >
+                Admin Panel
+              </Link>
+            )}
+          </div>
           <p className="text-white/70 text-lg mb-6">
             Aktuelle Verfügbarkeit und Performance unserer Services
           </p>

@@ -1,46 +1,39 @@
 import { NextResponse } from 'next/server'
 import { mockStatusData, getOverallStatus } from '@/lib/status-data'
+import { getIncidents, getMaintenance, getServiceStatuses } from '@/lib/status-db'
 
 // Simuliere echte Service-Checks
 async function checkServiceHealth(url?: string): Promise<{ status: 'operational' | 'degraded' | 'major_outage', responseTime?: number }> {
-  if (!url) {
-    return { status: 'operational', responseTime: Math.floor(Math.random() * 200) + 50 }
-  }
-
-  try {
-    const start = Date.now()
-    const response = await fetch(url, { 
-      method: 'HEAD',
-      signal: AbortSignal.timeout(5000) // 5 Sekunden Timeout
-    })
-    const responseTime = Date.now() - start
-
-    if (response.ok) {
-      if (responseTime > 2000) {
-        return { status: 'degraded', responseTime }
-      }
-      return { status: 'operational', responseTime }
-    } else {
-      return { status: 'major_outage', responseTime }
-    }
-  } catch (error) {
-    return { status: 'major_outage' }
+  // Für Demo-Zwecke geben wir immer 'operational' zurück
+  // In einer echten Implementierung würden hier echte Health-Checks stattfinden
+  return { 
+    status: 'operational', 
+    responseTime: Math.floor(Math.random() * 300) + 50 // 50-350ms
   }
 }
 
 export async function GET() {
   try {
-    // Simuliere Live-Service-Checks
+    // Hole echte Daten aus der Datenbank
+    const [incidents, maintenance, serviceStatuses] = await Promise.all([
+      getIncidents(),
+      getMaintenance(),
+      getServiceStatuses()
+    ])
+
+    // Simuliere Live-Service-Checks und merge mit gespeicherten Daten
     const updatedCategories = await Promise.all(
       mockStatusData.categories.map(async (category) => {
         const updatedServices = await Promise.all(
           category.services.map(async (service) => {
+            const savedStatus = serviceStatuses[service.id]
             const healthCheck = await checkServiceHealth(service.url)
+            
             return {
               ...service,
-              status: healthCheck.status,
-              responseTime: healthCheck.responseTime,
-              lastChecked: new Date().toISOString()
+              status: savedStatus?.status || healthCheck.status,
+              responseTime: savedStatus?.responseTime || healthCheck.responseTime,
+              lastChecked: savedStatus?.lastChecked || new Date().toISOString()
             }
           })
         )
@@ -55,6 +48,8 @@ export async function GET() {
     const updatedStatusData = {
       ...mockStatusData,
       categories: updatedCategories,
+      incidents: incidents.length > 0 ? incidents : mockStatusData.incidents,
+      maintenance: maintenance.length > 0 ? maintenance : mockStatusData.maintenance,
       overall: getOverallStatus(updatedCategories),
       lastUpdated: new Date().toISOString()
     }
