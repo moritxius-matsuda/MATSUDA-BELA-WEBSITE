@@ -20,66 +20,27 @@ export default function StatusTimeline({ serviceId }: StatusTimelineProps) {
   useEffect(() => {
     const fetchTimelineData = async () => {
       try {
+        console.log(`Fetching timeline data for service: ${serviceId}`)
         const response = await fetch(`/api/status/history?service=${serviceId}&days=90`)
+        
         if (response.ok) {
           const data = await response.json()
+          console.log(`Received timeline data:`, data.length, 'days')
           setTimelineData(data)
         } else {
-          // Fallback to mock data
-          setTimelineData(generateMockTimelineData())
+          console.error('API response not ok:', response.status, response.statusText)
+          setTimelineData([]) // Empty array if no data available
         }
       } catch (error) {
         console.error('Error fetching timeline data:', error)
-        // Fallback to mock data
-        setTimelineData(generateMockTimelineData())
+        setTimelineData([]) // Empty array on error
       }
     }
 
     fetchTimelineData()
   }, [serviceId])
 
-  const generateMockTimelineData = () => {
-    const data: DayStatus[] = []
-    const today = new Date()
-    
-    for (let i = 89; i >= 0; i--) {
-      const date = new Date(today)
-      date.setDate(date.getDate() - i)
-      
-      // Simulate realistic uptime data
-      const random = Math.random()
-      let status: DayStatus['status'] = 'operational'
-      let uptime = 100
-      let incidents = 0
-      
-      if (random < 0.02) { // 2% chance of major outage
-        status = 'major_outage'
-        uptime = Math.random() * 50 + 20 // 20-70% uptime
-        incidents = Math.floor(Math.random() * 3) + 1
-      } else if (random < 0.05) { // 3% chance of degraded
-        status = 'degraded'
-        uptime = Math.random() * 20 + 80 // 80-100% uptime
-        incidents = Math.floor(Math.random() * 2)
-      } else if (random < 0.07) { // 2% chance of partial outage
-        status = 'partial_outage'
-        uptime = Math.random() * 30 + 60 // 60-90% uptime
-        incidents = Math.floor(Math.random() * 2) + 1
-      } else if (random < 0.08) { // 1% chance of maintenance
-        status = 'maintenance'
-        uptime = 95 + Math.random() * 5 // 95-100% uptime
-        incidents = 0
-      }
-      
-      data.push({
-        date: date.toISOString().split('T')[0],
-        status,
-        uptime: Math.round(uptime * 100) / 100,
-        incidents
-      })
-    }
-    
-    return data
-  }
+  // No mock data - only real data from API
 
   const getStatusColor = (status: DayStatus['status']) => {
     switch (status) {
@@ -133,6 +94,26 @@ export default function StatusTimeline({ serviceId }: StatusTimelineProps) {
     if (timelineData.length === 0) return 100
     const totalUptime = timelineData.reduce((sum, day) => sum + day.uptime, 0)
     return Math.round((totalUptime / timelineData.length) * 100) / 100
+  }
+
+  // Show message if no data available
+  if (timelineData.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h5 className="text-sm font-medium text-white/80">90 Tage Verlauf</h5>
+          <div className="text-xs text-white/60">Sammle Daten...</div>
+        </div>
+        <div className="p-4 bg-white/5 rounded-lg border border-white/10 text-center">
+          <div className="text-white/60 text-sm">
+            📊 Historische Daten werden gesammelt. Timeline wird verfügbar, sobald genügend Daten vorhanden sind.
+          </div>
+          <div className="text-white/40 text-xs mt-2">
+            Monitoring läuft seit: {new Date().toLocaleDateString('de-DE')}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

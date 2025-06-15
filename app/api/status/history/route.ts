@@ -5,74 +5,43 @@ const MONITORING_SERVER_URL = process.env.MONITORING_SERVER_URL || 'http://local
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const serviceId = searchParams.get('service')
+    const serviceId = searchParams.get('service') || 'all'
     const days = parseInt(searchParams.get('days') || '90')
 
-    // Fetch historical data from monitoring server
-    const response = await fetch(`${MONITORING_SERVER_URL}/api/status/history?service=${serviceId}&days=${days}`, {
+    console.log(`Fetching history for service: ${serviceId}, days: ${days}`)
+
+    // Fetch from monitoring server - NO FALLBACK TO MOCK DATA
+    const monitoringUrl = `${MONITORING_SERVER_URL}/api/history?service=${serviceId}&days=${days}`
+    console.log(`Fetching from: ${monitoringUrl}`)
+    
+    const response = await fetch(monitoringUrl, {
       headers: {
         'Accept': 'application/json',
       },
-      next: { revalidate: 300 } // Cache for 5 minutes
+      next: { revalidate: 60 } // Cache for 1 minute only for real data
     })
 
     if (!response.ok) {
-      // Return mock data if monitoring server is not available
-      return NextResponse.json(generateMockHistoryData(days))
+      throw new Error(`Monitoring server responded with status: ${response.status}`)
     }
 
     const data = await response.json()
+    console.log(`Received ${data.length} history records from monitoring server`)
     return NextResponse.json(data)
 
   } catch (error) {
-    console.error('Error fetching status history:', error)
+    console.error('Error in history API:', error)
     
-    // Return mock data as fallback
-    const days = parseInt(new URL(request.url).searchParams.get('days') || '90')
-    return NextResponse.json(generateMockHistoryData(days))
+    // Return error - NO MOCK DATA FALLBACK
+    return NextResponse.json(
+      { 
+        error: 'Failed to fetch history data from monitoring server',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      }, 
+      { status: 500 }
+    )
   }
 }
 
-function generateMockHistoryData(days: number) {
-  const data = []
-  const today = new Date()
-  
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - i)
-    
-    // Simulate realistic uptime data
-    const random = Math.random()
-    let status = 'operational'
-    let uptime = 100
-    let incidents = 0
-    
-    if (random < 0.02) { // 2% chance of major outage
-      status = 'major_outage'
-      uptime = Math.random() * 50 + 20 // 20-70% uptime
-      incidents = Math.floor(Math.random() * 3) + 1
-    } else if (random < 0.05) { // 3% chance of degraded
-      status = 'degraded'
-      uptime = Math.random() * 20 + 80 // 80-100% uptime
-      incidents = Math.floor(Math.random() * 2)
-    } else if (random < 0.07) { // 2% chance of partial outage
-      status = 'partial_outage'
-      uptime = Math.random() * 30 + 60 // 60-90% uptime
-      incidents = Math.floor(Math.random() * 2) + 1
-    } else if (random < 0.08) { // 1% chance of maintenance
-      status = 'maintenance'
-      uptime = 95 + Math.random() * 5 // 95-100% uptime
-      incidents = 0
-    }
-    
-    data.push({
-      date: date.toISOString().split('T')[0],
-      status,
-      uptime: Math.round(uptime * 100) / 100,
-      incidents,
-      responseTime: Math.floor(Math.random() * 200) + 50 // 50-250ms
-    })
-  }
-  
-  return data
-}
+// No mock data - only real data from monitoring server

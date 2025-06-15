@@ -3,10 +3,25 @@ const { allQuery } = require('../database')
 
 const router = express.Router()
 
+// Test endpoint to verify history API is working
+router.get('/history/test', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'History API is working',
+    timestamp: new Date().toISOString(),
+    endpoints: [
+      'GET /api/history - Get historical data',
+      'GET /api/history/test - Test endpoint'
+    ]
+  })
+})
+
 // Get historical status data for timeline
 router.get('/history', async (req, res) => {
   try {
     const { service, days = 90 } = req.query
+    
+    console.log(`Fetching REAL history data for service: ${service}, days: ${days}`)
     
     // Calculate date range
     const endDate = new Date()
@@ -30,23 +45,27 @@ router.get('/history', async (req, res) => {
     
     const params = [startDate.toISOString(), endDate.toISOString()]
     
-    if (service) {
+    if (service && service !== 'all') {
       query += ' AND service_id = ?'
       params.push(service)
     }
     
     query += ' GROUP BY DATE(checked_at), service_id ORDER BY date DESC'
     
+    console.log('Executing query:', query)
+    console.log('With params:', params)
+    
     const results = await allQuery(query, params)
+    console.log(`Query returned ${results.length} rows`)
     
     // Process results to calculate daily status and uptime
     const processedData = results.map(row => {
       const totalChecks = row.total_checks
-      const operationalChecks = row.operational_checks
-      const degradedChecks = row.degraded_checks
-      const partialOutageChecks = row.partial_outage_checks
-      const majorOutageChecks = row.major_outage_checks
-      const maintenanceChecks = row.maintenance_checks
+      const operationalChecks = row.operational_checks || 0
+      const degradedChecks = row.degraded_checks || 0
+      const partialOutageChecks = row.partial_outage_checks || 0
+      const majorOutageChecks = row.major_outage_checks || 0
+      const maintenanceChecks = row.maintenance_checks || 0
       
       // Calculate uptime percentage
       const uptime = totalChecks > 0 ? 
@@ -75,65 +94,39 @@ router.get('/history', async (req, res) => {
       }
     })
     
-    // If no data available, generate mock data for demonstration
+    console.log(`Processed ${processedData.length} days of real data`)
+    
+    // If no historical data available, return empty array or minimal data
     if (processedData.length === 0) {
-      const mockData = generateMockHistoryData(parseInt(days), service)
-      return res.json(mockData)
+      console.log('No historical data found - returning empty array')
+      
+      // Generate minimal data for today only if no data exists
+      const today = new Date().toISOString().split('T')[0]
+      const minimalData = [{
+        date: today,
+        service_id: service || 'unknown',
+        status: 'operational',
+        uptime: 100,
+        incidents: 0,
+        responseTime: 0,
+        totalChecks: 0
+      }]
+      
+      return res.json(minimalData)
     }
     
     res.json(processedData)
     
   } catch (error) {
-    console.error('Error fetching history data:', error)
-    res.status(500).json({ error: 'Failed to fetch history data' })
+    console.error('Error fetching real history data:', error)
+    res.status(500).json({ 
+      error: 'Failed to fetch history data',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    })
   }
 })
 
-// Generate mock historical data for demonstration
-function generateMockHistoryData(days, serviceId) {
-  const data = []
-  const today = new Date()
-  
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - i)
-    
-    // Simulate realistic uptime data
-    const random = Math.random()
-    let status = 'operational'
-    let uptime = 100
-    let incidents = 0
-    
-    if (random < 0.02) { // 2% chance of major outage
-      status = 'major_outage'
-      uptime = Math.random() * 50 + 20 // 20-70% uptime
-      incidents = Math.floor(Math.random() * 3) + 1
-    } else if (random < 0.05) { // 3% chance of degraded
-      status = 'degraded'
-      uptime = Math.random() * 20 + 80 // 80-100% uptime
-      incidents = Math.floor(Math.random() * 2)
-    } else if (random < 0.07) { // 2% chance of partial outage
-      status = 'partial_outage'
-      uptime = Math.random() * 30 + 60 // 60-90% uptime
-      incidents = Math.floor(Math.random() * 2) + 1
-    } else if (random < 0.08) { // 1% chance of maintenance
-      status = 'maintenance'
-      uptime = 95 + Math.random() * 5 // 95-100% uptime
-      incidents = 0
-    }
-    
-    data.push({
-      date: date.toISOString().split('T')[0],
-      service_id: serviceId || 'all',
-      status,
-      uptime: Math.round(uptime * 100) / 100,
-      incidents,
-      responseTime: Math.floor(Math.random() * 200) + 50, // 50-250ms
-      totalChecks: 288 // 24 hours * 12 checks per hour (5-second intervals)
-    })
-  }
-  
-  return data
-}
+// No mock data - only real data from database
 
 module.exports = router

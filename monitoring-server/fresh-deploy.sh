@@ -134,4 +134,26 @@ echo "🔍 Quick Status Check:"
 curl -s http://localhost:3001/api/status | jq -r '.overall' 2>/dev/null || echo "Status API still initializing..."
 
 echo ""
+echo "🧪 Testing History API:"
+curl -s http://localhost:3001/api/history/test | jq -r '.status' 2>/dev/null || echo "History API test failed"
+
+echo ""
+echo "📊 Testing History Data:"
+HISTORY_COUNT=$(curl -s "http://localhost:3001/api/history?days=7" | jq '. | length' 2>/dev/null || echo "0")
+echo "History API returned $HISTORY_COUNT days of data"
+
+echo ""
+echo "🔧 Useful Scripts:"
+echo "   API Test: chmod +x test-api.sh && ./test-api.sh"
+echo "   DB Check: chmod +x check-database.sh && ./check-database.sh"
+
+echo ""
+echo "📊 Initial Database Check:"
+chmod +x check-database.sh
+./check-database.sh
+
+echo ""
 echo "✅ Deployment finished! Monitor the logs for any issues."
+echo ""
+echo "⏰ Note: Historical data will accumulate over time."
+echo "📈 Timeline will show real data as monitoring continues."

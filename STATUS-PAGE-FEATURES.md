@@ -76,10 +76,11 @@ monitoring-server/src/monitor.js         # 5-Sekunden-Monitoring
 - **Automatische Datenbereinigung** nach 30 Tagen
 - **REST-API** für Frontend-Integration
 
-### Fallback-Mechanismen
-- **Mock-Daten** wenn Monitoring-Server nicht verfügbar
-- **Graceful Degradation** bei API-Fehlern
-- **Client-seitige Caching** für bessere Performance
+### Nur Echte Daten
+- **KEINE Mock-Daten** - nur echte historische Daten
+- **Leere Timeline** bis genügend Daten gesammelt sind
+- **Datensammlung** beginnt mit dem ersten Deployment
+- **Timeline wird sichtbar** sobald Daten verfügbar sind
 
 ## 🚀 **Deployment**
 
