@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { UserButton, useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
+import StatusIndicator from './StatusIndicator'
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -23,7 +24,7 @@ export default function Navbar() {
     <nav className="glass-navbar fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
+          <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center">
               <img 
                 src="/rechteck-weiß.png" 
@@ -44,6 +45,9 @@ export default function Navbar() {
                 Matsuda Béla
               </span>
             </Link>
+            
+            {/* Status Indicator */}
+            <StatusIndicator />
           </div>
           
           {/* Desktop Menu */}
@@ -94,6 +98,17 @@ export default function Navbar() {
                 Blob Admin
               </Link>
             )}
+
+            <Link 
+              href="/status" 
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                pathname === '/status' 
+                  ? 'glass-button text-white shadow-lg' 
+                  : 'text-white/80 md:hover:text-white md:hover:glass-button'
+              }`}
+            >
+              Status
+            </Link>
 
             <Link 
               href="/impressum" 
@@ -211,6 +226,18 @@ export default function Navbar() {
                   Blob Admin
                 </Link>
               )}
+
+              <Link 
+                href="/status" 
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ${
+                  pathname === '/status' 
+                    ? 'glass-button text-white' 
+                    : 'text-white/80'
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Status
+              </Link>
 
               <Link 
                 href="/impressum" 
