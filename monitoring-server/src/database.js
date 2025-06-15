@@ -39,8 +39,20 @@ function createTables() {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`,
       
-      // Service status table
+      // Service status table (also create status_checks for compatibility)
       `CREATE TABLE IF NOT EXISTS service_status (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        service_id TEXT NOT NULL,
+        status TEXT NOT NULL,
+        response_time INTEGER,
+        status_code INTEGER,
+        error_message TEXT,
+        checked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (service_id) REFERENCES services (id)
+      )`,
+      
+      // Status checks table (for history API compatibility)
+      `CREATE TABLE IF NOT EXISTS status_checks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         service_id TEXT NOT NULL,
         status TEXT NOT NULL,

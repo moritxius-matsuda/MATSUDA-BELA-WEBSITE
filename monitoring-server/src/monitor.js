@@ -53,11 +53,19 @@ async function checkService(service) {
       status = STATUS_TYPES.DEGRADED
     }
     
-    // Save status to database
+    // Save status to both tables for compatibility
+    const insertData = [service.id, status, responseTime, statusCode]
+    
     await runQuery(
       `INSERT INTO service_status (service_id, status, response_time, status_code, checked_at) 
        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-      [service.id, status, responseTime, statusCode]
+      insertData
+    )
+    
+    await runQuery(
+      `INSERT INTO status_checks (service_id, status, response_time, status_code, checked_at) 
+       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      insertData
     )
     
     console.log(`✅ ${service.name}: ${status} (${responseTime}ms, ${statusCode})`)
@@ -74,11 +82,19 @@ async function checkService(service) {
     const responseTime = Date.now() - startTime
     const errorMessage = error.message
     
-    // Save error status to database
+    // Save error status to both tables for compatibility
+    const errorData = [service.id, STATUS_TYPES.MAJOR_OUTAGE, responseTime, errorMessage]
+    
     await runQuery(
       `INSERT INTO service_status (service_id, status, response_time, error_message, checked_at) 
        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-      [service.id, STATUS_TYPES.MAJOR_OUTAGE, responseTime, errorMessage]
+      errorData
+    )
+    
+    await runQuery(
+      `INSERT INTO status_checks (service_id, status, response_time, error_message, checked_at) 
+       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      errorData
     )
     
     console.log(`❌ ${service.name}: ${STATUS_TYPES.MAJOR_OUTAGE} (${errorMessage})`)
