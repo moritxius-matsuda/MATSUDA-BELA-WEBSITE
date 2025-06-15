@@ -219,7 +219,8 @@ export default function StatusTimeline({ serviceId, currentStatus }: StatusTimel
                 </div>
               )}
             </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Day Labels (every 10 days) */}
