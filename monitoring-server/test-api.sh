@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 echo "🔍 Testing Monitoring Server APIs..."
@@ -24,11 +25,19 @@ echo "5. Testing all services history:"
 curl -s "http://localhost:3001/api/history?days=7" | jq '. | length' || echo "All services history failed"
 
 echo ""
-echo "6. PM2 Status:"
+echo "6. Testing statistics endpoint:"
+curl -s "http://localhost:3001/api/stats" | jq '.uptime' || echo "Statistics endpoint failed"
+
+echo ""
+echo "7. Testing service-specific stats:"
+curl -s "http://localhost:3001/api/stats/main-website" | jq '.uptime' || echo "Service stats failed"
+
+echo ""
+echo "8. PM2 Status:"
 pm2 list | grep status-monitor
 
 echo ""
-echo "7. Recent logs:"
+echo "9. Recent logs:"
 pm2 logs status-monitor --lines 5 --nostream
 
 echo ""

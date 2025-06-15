@@ -143,6 +143,11 @@ HISTORY_COUNT=$(curl -s "http://localhost:3001/api/history?days=7" | jq '. | len
 echo "History API returned $HISTORY_COUNT days of data"
 
 echo ""
+echo "📈 Testing Statistics API:"
+UPTIME=$(curl -s "http://localhost:3001/api/stats" | jq -r '.uptime' 2>/dev/null || echo "N/A")
+echo "Current uptime: $UPTIME%"
+
+echo ""
 echo "🔧 Useful Scripts:"
 echo "   API Test: chmod +x test-api.sh && ./test-api.sh"
 echo "   DB Check: chmod +x check-database.sh && ./check-database.sh"

@@ -11,6 +11,13 @@ export default function StatusPage() {
   const { user } = useUser()
   const [statusData, setStatusData] = useState<SystemStatus>(mockStatusData)
   const [selectedTab, setSelectedTab] = useState<'current' | 'incidents' | 'maintenance'>('current')
+  const [stats, setStats] = useState({
+    uptime: 0,
+    avgResponseTime: 0,
+    incidents: 0,
+    maintenance: 0,
+    loading: true
+  })
   
   // Prüfe Admin-Berechtigung
   const isAdmin = user?.publicMetadata?.admin === 1
@@ -29,11 +36,39 @@ export default function StatusPage() {
       }
     }
 
+    const fetchStats = async () => {
+      try {
+        // Lade Statistiken für alle Services
+        const response = await fetch('/api/status/stats')
+        if (response.ok) {
+          const data = await response.json()
+          setStats({
+            uptime: data.uptime || 0,
+            avgResponseTime: data.avgResponseTime || 0,
+            incidents: data.incidents || 0,
+            maintenance: data.maintenance || 0,
+            loading: false
+          })
+        } else {
+          // Fallback wenn keine Stats verfügbar
+          setStats(prev => ({ ...prev, loading: false }))
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error)
+        setStats(prev => ({ ...prev, loading: false }))
+      }
+    }
+
     // Initial fetch
     fetchStatusData()
+    fetchStats()
 
     // Update alle 30 Sekunden
-    const interval = setInterval(fetchStatusData, 30000)
+    const interval = setInterval(() => {
+      fetchStatusData()
+      fetchStats()
+    }, 30000)
+    
     return () => clearInterval(interval)
   }, [])
 
@@ -82,22 +117,30 @@ export default function StatusPage() {
             Aktuelle Verfügbarkeit und Performance unserer Services
           </p>
           
-          {/* Quick Stats */}
+          {/* Quick Stats - ECHTE DATEN */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div className="glass-card p-4 text-center">
-              <div className="text-2xl font-bold text-green-400">99.9%</div>
+              <div className="text-2xl font-bold text-green-400">
+                {stats.loading ? '...' : `${stats.uptime.toFixed(1)}%`}
+              </div>
               <div className="text-white/60 text-sm">Verfügbarkeit (90 Tage)</div>
             </div>
             <div className="glass-card p-4 text-center">
-              <div className="text-2xl font-bold text-blue-400">125ms</div>
+              <div className="text-2xl font-bold text-blue-400">
+                {stats.loading ? '...' : `${Math.round(stats.avgResponseTime)}ms`}
+              </div>
               <div className="text-white/60 text-sm">Ø Antwortzeit</div>
             </div>
             <div className="glass-card p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-400">2</div>
+              <div className="text-2xl font-bold text-yellow-400">
+                {stats.loading ? '...' : stats.incidents}
+              </div>
               <div className="text-white/60 text-sm">Vorfälle (30 Tage)</div>
             </div>
             <div className="glass-card p-4 text-center">
-              <div className="text-2xl font-bold text-purple-400">0</div>
+              <div className="text-2xl font-bold text-purple-400">
+                {stats.loading ? '...' : stats.maintenance}
+              </div>
               <div className="text-white/60 text-sm">Geplante Wartungen</div>
             </div>
           </div>

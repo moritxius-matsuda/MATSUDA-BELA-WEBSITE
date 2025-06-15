@@ -10,6 +10,7 @@ const statusRoutes = require('./src/routes/status')
 const incidentRoutes = require('./src/routes/incidents')
 const maintenanceRoutes = require('./src/routes/maintenance')
 const historyRoutes = require('./src/routes/history')
+const statsRoutes = require('./src/routes/stats')
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -37,6 +38,7 @@ app.use('/api/status', statusRoutes)
 app.use('/api/incidents', incidentRoutes)
 app.use('/api/maintenance', maintenanceRoutes)
 app.use('/api', historyRoutes)
+app.use('/api', statsRoutes)
 
 // Error handling middleware
 app.use((err, req, res, next) => {
