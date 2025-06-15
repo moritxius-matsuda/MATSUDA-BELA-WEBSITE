@@ -97,7 +97,7 @@ export default function StatusAdminPage() {
       }
     } catch (error) {
       console.error('Admin: Error updating incident:', error)
-      alert(`Fehler beim Aktualisieren: ${error.message}`)
+      alert(`Fehler beim Aktualisieren: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`)
     }
   }
 
