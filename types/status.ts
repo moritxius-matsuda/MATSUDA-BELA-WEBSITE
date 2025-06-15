@@ -9,6 +9,7 @@ export interface Service {
   url?: string
   lastChecked: string
   responseTime?: number
+  uptime?: number
 }
 
 export interface StatusCategory {
