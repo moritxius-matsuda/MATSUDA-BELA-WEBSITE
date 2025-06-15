@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-// import { useUser } from '@clerk/nextjs' // Removed for public access
+import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import { mockStatusData, getStatusColor, getStatusBgColor, getStatusText } from '@/lib/status-data'
 import { SystemStatus, StatusIncident, MaintenanceWindow, ServiceStatus } from '@/types/status'
 import StatusTimeline from '@/components/status/StatusTimeline'
 
 export default function StatusPage() {
-  // const { user } = useUser() // Removed for public access
+  const { user } = useUser()
   const [statusData, setStatusData] = useState<SystemStatus>(mockStatusData)
   const [selectedTab, setSelectedTab] = useState<'current' | 'incidents' | 'maintenance'>('current')
   const [stats, setStats] = useState({
@@ -21,8 +21,8 @@ export default function StatusPage() {
   const [currentIncidents, setCurrentIncidents] = useState<StatusIncident[]>([])
   const [loadingIncidents, setLoadingIncidents] = useState(true)
   
-  // Admin-Berechtigung entfernt für öffentlichen Zugang
-  // const isAdmin = user?.publicMetadata?.admin === 1
+  // Prüfe Admin-Berechtigung (nur für angemeldete Benutzer)
+  const isAdmin = user?.publicMetadata?.admin === 1
 
   // Bestimme Gesamtstatus basierend auf aktuellen Vorfällen
   const getOverallStatusFromIncidents = (): ServiceStatus => {
@@ -67,6 +67,64 @@ export default function StatusPage() {
   }
 
   const overallStatus: ServiceStatus = getOverallStatusFromIncidents()
+
+  // Bestimme Service-Status basierend auf betroffenen Services in Incidents
+  const getServiceStatusFromIncidents = (serviceName: string): ServiceStatus => {
+    const affectedIncidents = currentIncidents.filter(incident => 
+      (incident.status === 'investigating' || incident.status === 'identified' || incident.status === 'monitoring') &&
+      incident.affectedServices.includes(serviceName)
+    )
+
+    if (affectedIncidents.length === 0) {
+      return 'operational'
+    }
+
+    // Finde den schwerwiegendsten Vorfall für diesen Service
+    const severityOrder: ServiceStatus[] = ['major_outage', 'partial_outage', 'degraded', 'maintenance', 'operational']
+    let mostSevere: ServiceStatus = 'operational'
+
+    affectedIncidents.forEach(incident => {
+      let mappedImpact: ServiceStatus = 'operational'
+      switch (incident.impact) {
+        case 'critical':
+        case 'major_outage':
+          mappedImpact = 'major_outage'
+          break
+        case 'major':
+        case 'partial_outage':
+          mappedImpact = 'partial_outage'
+          break
+        case 'minor':
+        case 'degraded':
+          mappedImpact = 'degraded'
+          break
+      }
+
+      if (severityOrder.indexOf(mappedImpact) < severityOrder.indexOf(mostSevere)) {
+        mostSevere = mappedImpact
+      }
+    })
+
+    return mostSevere
+  }
+
+  // Berechne Uptime basierend auf Service-Status
+  const calculateServiceUptime = (serviceName: string, baseUptime: number): number => {
+    const serviceStatus = getServiceStatusFromIncidents(serviceName)
+    
+    switch (serviceStatus) {
+      case 'major_outage':
+        return Math.max(baseUptime - 5, 85) // Reduziere um 5%, mindestens 85%
+      case 'partial_outage':
+        return Math.max(baseUptime - 2, 90) // Reduziere um 2%, mindestens 90%
+      case 'degraded':
+        return Math.max(baseUptime - 1, 95) // Reduziere um 1%, mindestens 95%
+      case 'maintenance':
+        return Math.max(baseUptime - 0.5, 98) // Reduziere um 0.5%, mindestens 98%
+      default:
+        return baseUptime
+    }
+  }
 
   // Lade echte Daten von der API
   useEffect(() => {
@@ -165,16 +223,27 @@ export default function StatusPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex justify-between items-center mb-4">
-            <div></div>
-            <h1 className="text-4xl font-bold text-white">
-              System Status
-            </h1>
-            {/* Admin Panel Link entfernt für öffentlichen Zugang */}
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-24"></div> {/* Spacer für Balance */}
+            <div className="flex-1">
+              <h1 className="text-4xl font-bold text-white mb-2">
+                System Status
+              </h1>
+              <p className="text-white/70 text-lg">
+                Aktuelle Verfügbarkeit und Performance unserer Services
+              </p>
+            </div>
+            <div className="w-24 flex justify-end">
+              {isAdmin && (
+                <Link
+                  href="/status/admin"
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-300 text-sm"
+                >
+                  Admin Panel
+                </Link>
+              )}
+            </div>
           </div>
-          <p className="text-white/70 text-lg mb-6">
-            Aktuelle Verfügbarkeit und Performance unserer Services
-          </p>
           
           {/* Quick Stats - ECHTE DATEN */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -339,37 +408,91 @@ export default function StatusPage() {
                   </div>
                   
                   <div className="space-y-4">
-                    {category.services.map((service) => (
-                      <div key={service.id} className="space-y-3">
-                        {/* Service Header */}
-                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
-                          <div className="flex items-center gap-4">
-                            <div className={`w-3 h-3 rounded-full ${service.status === 'operational' ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                            <div>
-                              <h4 className="font-medium text-white">{service.name}</h4>
-                              <p className="text-white/60 text-sm">{service.description}</p>
+                    {category.services.map((service) => {
+                      // Bestimme aktuellen Status basierend auf Incidents
+                      const incidentStatus = getServiceStatusFromIncidents(service.name)
+                      const finalStatus = incidentStatus !== 'operational' ? incidentStatus : service.status
+                      const baseUptime = service.uptime || 99.9
+                      const adjustedUptime = calculateServiceUptime(service.name, baseUptime)
+                      
+                      // Finde betroffene Incidents für diesen Service
+                      const affectedIncidents = currentIncidents.filter(incident => 
+                        (incident.status === 'investigating' || incident.status === 'identified' || incident.status === 'monitoring') &&
+                        incident.affectedServices.includes(service.name)
+                      )
+                      
+                      return (
+                        <div key={service.id} className="space-y-3">
+                          {/* Service Header */}
+                          <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
+                            <div className="flex items-center gap-4">
+                              <div className={`w-3 h-3 rounded-full ${getStatusBgColor(finalStatus).replace('bg-', 'bg-').split(' ')[0]}`}></div>
+                              <div>
+                                <h4 className="font-medium text-white">{service.name}</h4>
+                                <p className="text-white/60 text-sm">{service.description}</p>
+                                {affectedIncidents.length > 0 && (
+                                  <p className="text-orange-400 text-xs mt-1">
+                                    Betroffen von {affectedIncidents.length} Vorfall{affectedIncidents.length > 1 ? 'en' : ''}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="text-right">
+                              <span className={`text-sm font-medium ${getStatusColor(finalStatus)}`}>
+                                {getStatusText(finalStatus)}
+                              </span>
+                              <p className="text-white/50 text-xs mt-1">
+                                {adjustedUptime.toFixed(1)}% Uptime
+                              </p>
+                              {service.responseTime && (
+                                <p className="text-white/50 text-xs">
+                                  {service.responseTime}ms
+                                </p>
+                              )}
+                              <p className="text-white/40 text-xs">
+                                {formatRelativeTime(service.lastChecked)}
+                              </p>
                             </div>
                           </div>
                           
-                          <div className="text-right">
-                            <span className={`text-sm font-medium ${getStatusColor(service.status)}`}>
-                              {getStatusText(service.status)}
-                            </span>
-                            {service.responseTime && (
-                              <p className="text-white/50 text-xs mt-1">
-                                {service.responseTime}ms
-                              </p>
-                            )}
-                            <p className="text-white/40 text-xs">
-                              {formatRelativeTime(service.lastChecked)}
-                            </p>
-                          </div>
+                          {/* Incident Details für diesen Service */}
+                          {affectedIncidents.length > 0 && (
+                            <div className="ml-4 space-y-2">
+                              {affectedIncidents.slice(0, 2).map((incident) => (
+                                <div key={incident.id} className="flex items-center gap-3 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+                                  <div className={`w-2 h-2 rounded-full ${
+                                    incident.status === 'investigating' ? 'bg-red-400' :
+                                    incident.status === 'identified' ? 'bg-orange-400' :
+                                    'bg-yellow-400'
+                                  }`}></div>
+                                  <div className="flex-1">
+                                    <p className="text-white text-sm font-medium">{incident.title}</p>
+                                    <p className="text-white/60 text-xs">{incident.description}</p>
+                                  </div>
+                                  <span className={`text-xs px-2 py-1 rounded-full ${
+                                    incident.status === 'investigating' ? 'bg-red-500/20 text-red-300' :
+                                    incident.status === 'identified' ? 'bg-orange-500/20 text-orange-300' :
+                                    'bg-yellow-500/20 text-yellow-300'
+                                  }`}>
+                                    {incident.status === 'investigating' ? 'Wird untersucht' :
+                                     incident.status === 'identified' ? 'Identifiziert' : 'Wird überwacht'}
+                                  </span>
+                                </div>
+                              ))}
+                              {affectedIncidents.length > 2 && (
+                                <p className="text-white/50 text-xs ml-5">
+                                  +{affectedIncidents.length - 2} weitere Vorfälle
+                                </p>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Status Timeline - Last 90 Days */}
+                          <StatusTimeline serviceId={service.id} currentStatus={finalStatus} />
                         </div>
-                        
-                        {/* Status Timeline - Last 90 Days */}
-                        <StatusTimeline serviceId={service.id} />
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               ))}

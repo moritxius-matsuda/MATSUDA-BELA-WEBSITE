@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 
 interface StatusTimelineProps {
   serviceId: string
+  currentStatus?: 'operational' | 'degraded' | 'partial_outage' | 'major_outage' | 'maintenance'
 }
 
 interface DayStatus {
@@ -13,7 +14,7 @@ interface DayStatus {
   incidents: number
 }
 
-export default function StatusTimeline({ serviceId }: StatusTimelineProps) {
+export default function StatusTimeline({ serviceId, currentStatus }: StatusTimelineProps) {
   const [timelineData, setTimelineData] = useState<DayStatus[]>([])
   const [selectedDay, setSelectedDay] = useState<DayStatus | null>(null)
 
@@ -93,7 +94,27 @@ export default function StatusTimeline({ serviceId }: StatusTimelineProps) {
   const calculateOverallUptime = () => {
     if (timelineData.length === 0) return 100
     const totalUptime = timelineData.reduce((sum, day) => sum + day.uptime, 0)
-    return Math.round((totalUptime / timelineData.length) * 100) / 100
+    let baseUptime = Math.round((totalUptime / timelineData.length) * 100) / 100
+    
+    // Adjust uptime based on current status from incidents
+    if (currentStatus && currentStatus !== 'operational') {
+      switch (currentStatus) {
+        case 'major_outage':
+          baseUptime = Math.max(baseUptime - 5, 85)
+          break
+        case 'partial_outage':
+          baseUptime = Math.max(baseUptime - 2, 90)
+          break
+        case 'degraded':
+          baseUptime = Math.max(baseUptime - 1, 95)
+          break
+        case 'maintenance':
+          baseUptime = Math.max(baseUptime - 0.5, 98)
+          break
+      }
+    }
+    
+    return Math.round(baseUptime * 100) / 100
   }
 
   // Show message if no data available
@@ -155,14 +176,20 @@ export default function StatusTimeline({ serviceId }: StatusTimelineProps) {
 
         {/* Status Bars */}
         <div className="flex gap-1">
-          {timelineData.map((day, index) => (
-            <div
-              key={day.date}
-              className={`h-8 flex-1 rounded-sm cursor-pointer transition-all duration-200 hover:scale-110 hover:z-10 relative ${getStatusColor(day.status)}`}
-              onMouseEnter={() => setSelectedDay(day)}
-              onMouseLeave={() => setSelectedDay(null)}
-              title={`${formatDate(day.date)}: ${getStatusText(day.status)} (${day.uptime}%)`}
-            >
+          {timelineData.map((day, index) => {
+            // Check if this is today and we have a current status from incidents
+            const today = new Date().toISOString().split('T')[0]
+            const isToday = day.date === today
+            const displayStatus = isToday && currentStatus ? currentStatus : day.status
+            
+            return (
+              <div
+                key={day.date}
+                className={`h-8 flex-1 rounded-sm cursor-pointer transition-all duration-200 hover:scale-110 hover:z-10 relative ${getStatusColor(displayStatus)} ${isToday ? 'ring-2 ring-white/50' : ''}`}
+                onMouseEnter={() => setSelectedDay({...day, status: displayStatus})}
+                onMouseLeave={() => setSelectedDay(null)}
+                title={`${formatDate(day.date)}: ${getStatusText(displayStatus)} (${day.uptime}%)${isToday ? ' (Heute)' : ''}`}
+              >
               {/* Tooltip */}
               {selectedDay?.date === day.date && (
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-20">
@@ -171,7 +198,7 @@ export default function StatusTimeline({ serviceId }: StatusTimelineProps) {
                     <div className="space-y-1">
                       <div className="flex justify-between">
                         <span>Status:</span>
-                        <span className="font-medium">{getStatusText(day.status)}</span>
+                        <span className="font-medium">{getStatusText(selectedDay.status)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Verfügbarkeit:</span>
