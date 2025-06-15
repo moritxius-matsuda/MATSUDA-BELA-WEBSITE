@@ -18,9 +18,36 @@ export default function StatusPage() {
     maintenance: 0,
     loading: true
   })
+  const [currentIncidents, setCurrentIncidents] = useState<StatusIncident[]>([])
+  const [loadingIncidents, setLoadingIncidents] = useState(true)
   
   // Prüfe Admin-Berechtigung
   const isAdmin = user?.publicMetadata?.admin === 1
+
+  // Bestimme Gesamtstatus basierend auf aktuellen Vorfällen
+  const getOverallStatusFromIncidents = () => {
+    if (currentIncidents.length === 0) {
+      return statusData.overall // Verwende API-Status wenn keine Vorfälle
+    }
+
+    // Finde den schwerwiegendsten Vorfall
+    const severityOrder = ['major_outage', 'partial_outage', 'degraded', 'maintenance', 'operational']
+    let mostSevere = 'operational'
+
+    currentIncidents.forEach(incident => {
+      if (incident.status === 'investigating' || incident.status === 'identified' || incident.status === 'monitoring') {
+        const impactIndex = severityOrder.indexOf(incident.impact)
+        const currentIndex = severityOrder.indexOf(mostSevere)
+        if (impactIndex < currentIndex) {
+          mostSevere = incident.impact
+        }
+      }
+    })
+
+    return mostSevere
+  }
+
+  const overallStatus = getOverallStatusFromIncidents()
 
   // Lade echte Daten von der API
   useEffect(() => {
@@ -59,14 +86,34 @@ export default function StatusPage() {
       }
     }
 
+    const fetchCurrentIncidents = async () => {
+      try {
+        // Lade aktuelle Vorfälle
+        const response = await fetch('/api/incidents?status=active')
+        if (response.ok) {
+          const data = await response.json()
+          setCurrentIncidents(data.incidents || [])
+        } else {
+          setCurrentIncidents([])
+        }
+        setLoadingIncidents(false)
+      } catch (error) {
+        console.error('Error fetching current incidents:', error)
+        setCurrentIncidents([])
+        setLoadingIncidents(false)
+      }
+    }
+
     // Initial fetch
     fetchStatusData()
     fetchStats()
+    fetchCurrentIncidents()
 
     // Update alle 30 Sekunden
     const interval = setInterval(() => {
       fetchStatusData()
       fetchStats()
+      fetchCurrentIncidents()
     }, 30000)
     
     return () => clearInterval(interval)
@@ -145,17 +192,68 @@ export default function StatusPage() {
             </div>
           </div>
           
-          {/* Overall Status */}
-          <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-full border ${getStatusBgColor(statusData.overall)}`}>
-            <div className={`w-3 h-3 rounded-full ${statusData.overall === 'operational' ? 'bg-green-400' : 'bg-red-400'} animate-pulse`}></div>
-            <span className={`font-semibold ${getStatusColor(statusData.overall)}`}>
-              {statusData.overall === 'operational' ? 'Alle Systeme betriebsbereit' : `System Status: ${getStatusText(statusData.overall)}`}
-            </span>
+          {/* Overall Status - MIT AKTUELLEN VORFÄLLEN */}
+          <div className="space-y-4">
+            <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-full border ${getStatusBgColor(overallStatus)}`}>
+              <div className={`w-3 h-3 rounded-full ${
+                getStatusColor(overallStatus).includes('green') ? 'bg-green-400' : 
+                getStatusColor(overallStatus).includes('yellow') ? 'bg-yellow-400' : 
+                getStatusColor(overallStatus).includes('orange') ? 'bg-orange-400' : 'bg-red-400'
+              } animate-pulse`}></div>
+              <span className={`font-semibold ${getStatusColor(overallStatus)}`}>
+                {overallStatus === 'operational' ? 'Alle Systeme betriebsbereit' : `System Status: ${getStatusText(overallStatus)}`}
+              </span>
+            </div>
+
+            {/* Aktuelle Vorfälle anzeigen */}
+            {!loadingIncidents && currentIncidents.length > 0 && (
+              <div className="space-y-3 max-w-2xl mx-auto">
+                <h3 className="text-white/80 font-medium text-sm">Aktuelle Vorfälle:</h3>
+                {currentIncidents.slice(0, 2).map((incident) => (
+                  <div key={incident.id} className={`p-4 rounded-lg border-l-4 ${getStatusBgColor(incident.impact)} ${
+                    incident.impact === 'major_outage' ? 'border-red-500' :
+                    incident.impact === 'partial_outage' ? 'border-orange-500' :
+                    incident.impact === 'degraded' ? 'border-yellow-500' : 'border-blue-500'
+                  }`}>
+                    <div className="flex items-start justify-between">
+                      <div className="text-left flex-1">
+                        <h4 className="font-medium text-white text-sm">{incident.title}</h4>
+                        <p className="text-white/70 text-xs mt-1 overflow-hidden" style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical'
+                        }}>{incident.description}</p>
+                        <p className="text-white/50 text-xs mt-2">
+                          {new Date(incident.createdAt).toLocaleString('de-DE')}
+                        </p>
+                      </div>
+                      <div className="ml-4">
+                        <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
+                          incident.status === 'investigating' ? 'bg-red-500/20 text-red-300' :
+                          incident.status === 'identified' ? 'bg-orange-500/20 text-orange-300' :
+                          incident.status === 'monitoring' ? 'bg-yellow-500/20 text-yellow-300' :
+                          'bg-green-500/20 text-green-300'
+                        }`}>
+                          {incident.status === 'investigating' ? 'Wird untersucht' :
+                           incident.status === 'identified' ? 'Identifiziert' :
+                           incident.status === 'monitoring' ? 'Wird überwacht' : 'Behoben'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {currentIncidents.length > 2 && (
+                  <p className="text-white/50 text-xs text-center">
+                    +{currentIncidents.length - 2} weitere Vorfälle - Siehe "Vorfälle" Tab
+                  </p>
+                )}
+              </div>
+            )}
+            
+            <p className="text-white/50 text-sm">
+              Letztes Update: {formatRelativeTime(statusData.lastUpdated)}
+            </p>
           </div>
-          
-          <p className="text-white/50 text-sm mt-3">
-            Letztes Update: {formatRelativeTime(statusData.lastUpdated)}
-          </p>
         </div>
 
         {/* Navigation Tabs */}

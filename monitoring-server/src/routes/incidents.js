@@ -6,14 +6,33 @@ const router = express.Router()
 // Get all incidents
 router.get('/', async (req, res) => {
   try {
-    const incidents = await allQuery(`
+    const { status, limit = 50 } = req.query
+    
+    console.log(`Fetching incidents with status: ${status}, limit: ${limit}`)
+    
+    let query = `
       SELECT i.*, 
              GROUP_CONCAT(iu.message || '|' || iu.status || '|' || iu.created_at, '###') as updates
       FROM incidents i
       LEFT JOIN incident_updates iu ON i.id = iu.incident_id
-      GROUP BY i.id
-      ORDER BY i.created_at DESC
-    `)
+    `
+    
+    const params = []
+    
+    // Filter by status if specified
+    if (status === 'active') {
+      query += ` WHERE i.status IN ('investigating', 'identified', 'monitoring')`
+    } else if (status === 'resolved') {
+      query += ` WHERE i.status = 'resolved'`
+    } else if (status) {
+      query += ` WHERE i.status = ?`
+      params.push(status)
+    }
+    
+    query += ` GROUP BY i.id ORDER BY i.created_at DESC LIMIT ?`
+    params.push(parseInt(limit))
+    
+    const incidents = await allQuery(query, params)
     
     const formattedIncidents = incidents.map(incident => ({
       id: incident.id,

@@ -33,11 +33,19 @@ echo "7. Testing service-specific stats:"
 curl -s "http://localhost:3001/api/stats/main-website" | jq '.uptime' || echo "Service stats failed"
 
 echo ""
-echo "8. PM2 Status:"
+echo "8. Testing incidents endpoint:"
+curl -s "http://localhost:3001/api/incidents" | jq '. | length' || echo "Incidents endpoint failed"
+
+echo ""
+echo "9. Testing active incidents:"
+curl -s "http://localhost:3001/api/incidents?status=active" | jq '.incidents | length' || echo "Active incidents failed"
+
+echo ""
+echo "10. PM2 Status:"
 pm2 list | grep status-monitor
 
 echo ""
-echo "9. Recent logs:"
+echo "11. Recent logs:"
 pm2 logs status-monitor --lines 5 --nostream
 
 echo ""

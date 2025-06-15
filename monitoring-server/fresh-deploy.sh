@@ -148,9 +148,16 @@ UPTIME=$(curl -s "http://localhost:3001/api/stats" | jq -r '.uptime' 2>/dev/null
 echo "Current uptime: $UPTIME%"
 
 echo ""
+echo "🚨 Testing Incidents API:"
+INCIDENTS_COUNT=$(curl -s "http://localhost:3001/api/incidents" | jq '.incidents | length' 2>/dev/null || echo "0")
+echo "Total incidents: $INCIDENTS_COUNT"
+
+echo ""
 echo "🔧 Useful Scripts:"
 echo "   API Test: chmod +x test-api.sh && ./test-api.sh"
 echo "   DB Check: chmod +x check-database.sh && ./check-database.sh"
+echo "   Test Incident: chmod +x create-test-incident.sh && ./create-test-incident.sh"
+echo "   Cleanup Tests: chmod +x cleanup-test-incidents.sh && ./cleanup-test-incidents.sh"
 
 echo ""
 echo "📊 Initial Database Check:"
