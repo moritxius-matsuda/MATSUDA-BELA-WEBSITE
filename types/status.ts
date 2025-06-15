@@ -25,7 +25,7 @@ export interface StatusIncident {
   title: string
   description: string
   status: IncidentStatus
-  impact: 'minor' | 'major' | 'critical'
+  impact: 'minor' | 'major' | 'critical' | 'degraded' | 'partial_outage' | 'major_outage'
   affectedServices: string[]
   createdAt: string
   updatedAt: string
