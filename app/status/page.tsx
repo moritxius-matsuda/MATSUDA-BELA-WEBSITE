@@ -225,7 +225,7 @@ export default function StatusPage() {
             </div>
 
             {/* Aktuelle Vorfälle anzeigen */}
-            {!loadingIncidents && currentIncidents.length > 0 && (
+            {!loadingIncidents && Array.isArray(currentIncidents) && currentIncidents.length > 0 && (
               <div className="space-y-3 max-w-2xl mx-auto">
                 <h3 className="text-white/80 font-medium text-sm">Aktuelle Vorfälle:</h3>
                 {currentIncidents.slice(0, 2).map((incident) => {
@@ -292,7 +292,7 @@ export default function StatusPage() {
                     </div>
                   )
                 })}
-                {currentIncidents.length > 2 && (
+                {Array.isArray(currentIncidents) && currentIncidents.length > 2 && (
                   <p className="text-white/50 text-xs text-center">
                     +{currentIncidents.length - 2} weitere Vorfälle - Siehe "Vorfälle" Tab
                   </p>

@@ -7,7 +7,6 @@ echo "============================"
 INCIDENT_DATA='{
   "title": "Langsame Antwortzeiten bei der Hauptwebsite",
   "description": "Benutzer melden verlangsamte Ladezeiten auf der Hauptwebsite. Wir untersuchen das Problem.",
-  "status": "investigating",
   "impact": "degraded",
   "affectedServices": ["main-website", "guides-system"]
 }'
