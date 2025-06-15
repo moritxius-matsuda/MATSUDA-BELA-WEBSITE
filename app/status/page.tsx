@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import { mockStatusData, getStatusColor, getStatusBgColor, getStatusText } from '@/lib/status-data'
-import { SystemStatus, StatusIncident, MaintenanceWindow } from '@/types/status'
+import { SystemStatus, StatusIncident, MaintenanceWindow, ServiceStatus } from '@/types/status'
 import StatusTimeline from '@/components/status/StatusTimeline'
 
 export default function StatusPage() {
@@ -25,21 +25,21 @@ export default function StatusPage() {
   const isAdmin = user?.publicMetadata?.admin === 1
 
   // Bestimme Gesamtstatus basierend auf aktuellen Vorfällen
-  const getOverallStatusFromIncidents = () => {
+  const getOverallStatusFromIncidents = (): ServiceStatus => {
     if (currentIncidents.length === 0) {
       return statusData.overall // Verwende API-Status wenn keine Vorfälle
     }
 
     // Finde den schwerwiegendsten Vorfall
-    const severityOrder = ['major_outage', 'partial_outage', 'degraded', 'maintenance', 'operational']
-    let mostSevere = 'operational'
+    const severityOrder: ServiceStatus[] = ['major_outage', 'partial_outage', 'degraded', 'maintenance', 'operational']
+    let mostSevere: ServiceStatus = 'operational'
 
     currentIncidents.forEach(incident => {
       if (incident.status === 'investigating' || incident.status === 'identified' || incident.status === 'monitoring') {
-        const impactIndex = severityOrder.indexOf(incident.impact)
+        const impactIndex = severityOrder.indexOf(incident.impact as ServiceStatus)
         const currentIndex = severityOrder.indexOf(mostSevere)
-        if (impactIndex < currentIndex) {
-          mostSevere = incident.impact
+        if (impactIndex !== -1 && impactIndex < currentIndex) {
+          mostSevere = incident.impact as ServiceStatus
         }
       }
     })
@@ -47,7 +47,7 @@ export default function StatusPage() {
     return mostSevere
   }
 
-  const overallStatus = getOverallStatusFromIncidents()
+  const overallStatus: ServiceStatus = getOverallStatusFromIncidents()
 
   // Lade echte Daten von der API
   useEffect(() => {
@@ -210,7 +210,7 @@ export default function StatusPage() {
               <div className="space-y-3 max-w-2xl mx-auto">
                 <h3 className="text-white/80 font-medium text-sm">Aktuelle Vorfälle:</h3>
                 {currentIncidents.slice(0, 2).map((incident) => (
-                  <div key={incident.id} className={`p-4 rounded-lg border-l-4 ${getStatusBgColor(incident.impact)} ${
+                  <div key={incident.id} className={`p-4 rounded-lg border-l-4 ${getStatusBgColor(incident.impact as ServiceStatus)} ${
                     incident.impact === 'major_outage' ? 'border-red-500' :
                     incident.impact === 'partial_outage' ? 'border-orange-500' :
                     incident.impact === 'degraded' ? 'border-yellow-500' : 'border-blue-500'
