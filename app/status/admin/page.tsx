@@ -290,14 +290,12 @@ export default function StatusAdminPage() {
                         Überwachung starten
                       </button>
                     )}
-                    {incident.status !== 'resolved' && (
-                      <button
-                        onClick={() => updateIncident(incident.id, 'Problem vollständig behoben.', 'resolved')}
-                        className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors duration-300"
-                      >
-                        Als behoben markieren
-                      </button>
-                    )}
+                    <button
+                      onClick={() => updateIncident(incident.id, 'Problem vollständig behoben.', 'resolved')}
+                      className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors duration-300"
+                    >
+                      Als behoben markieren
+                    </button>
                   </div>
                 )}
 
