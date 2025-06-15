@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { StatusIncident } from '@/types/status'
+import { StatusIncident, IncidentStatus } from '@/types/status'
 import { mockStatusData } from '@/lib/status-data'
 
 export default function StatusAdminPage() {
@@ -67,7 +67,7 @@ export default function StatusAdminPage() {
     }
   }
 
-  const updateIncident = async (id: string, message: string, status: StatusIncident['status']) => {
+  const updateIncident = async (id: string, message: string, status: IncidentStatus) => {
     try {
       const response = await fetch('/api/status/incidents', {
         method: 'PUT',

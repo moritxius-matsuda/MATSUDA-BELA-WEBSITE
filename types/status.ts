@@ -18,11 +18,13 @@ export interface StatusCategory {
   services: Service[]
 }
 
+export type IncidentStatus = 'investigating' | 'identified' | 'monitoring' | 'resolved'
+
 export interface StatusIncident {
   id: string
   title: string
   description: string
-  status: 'investigating' | 'identified' | 'monitoring' | 'resolved'
+  status: IncidentStatus
   impact: 'minor' | 'major' | 'critical'
   affectedServices: string[]
   createdAt: string
@@ -33,7 +35,7 @@ export interface StatusIncident {
 export interface StatusUpdate {
   id: string
   message: string
-  status: 'investigating' | 'identified' | 'monitoring' | 'resolved'
+  status: IncidentStatus
   timestamp: string
 }
 
