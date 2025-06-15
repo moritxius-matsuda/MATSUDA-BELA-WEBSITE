@@ -53,7 +53,6 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <Analytics/>
       <html lang="de">
         <body className={`${inter.className}`} data-theme="light">
           <div className="liquid-bg">
@@ -64,6 +63,7 @@ export default function RootLayout({
           <Navbar />
           <main className="min-h-screen pt-16">
             {children}
+            <Analytics/>
           </main>
         </body>
       </html>
